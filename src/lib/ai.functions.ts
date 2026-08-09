@@ -1,0 +1,284 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+
+import { AiError, callAiJson, callAiText } from "./ai.server";
+import type { CareRequirements, DraftTask, MatchSuggestion } from "./care-types";
+
+const stringArray = z.array(z.string()).default([]);
+
+function toMessage(error: unknown): never {
+  if (error instanceof AiError) throw new Error(error.message);
+  console.error(error);
+  throw new Error("Something went wrong. Please try again.");
+}
+
+/** Turn a family's free-text description into structured care requirements. */
+export const structureCareRequest = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ description: z.string().trim().min(10).max(4000) }).parse(input),
+  )
+  .handler(async ({ data }): Promise<CareRequirements> => {
+    try {
+      const result = await callAiJson<Record<string, unknown>>({
+        system: `Convert a family's description of their care situation into structured requirements.
+Return JSON with exactly these keys:
+{
+  "personName": string,        // the person receiving care, "" if not stated
+  "area": string,              // neighbourhood / city if stated, else ""
+  "summary": string,           // 1-2 warm, plain sentences describing the situation
+  "supportNeeds": string[],    // practical help needed, e.g. "Help with morning bathing"
+  "schedule": string[],        // when help is needed, e.g. "Weekday mornings, 7am-11am"
+  "languages": string[],       // languages the family mentioned
+  "preferences": string[],     // personal preferences and routines they mentioned
+  "thingsToDiscuss": string[]  // open questions the family may want to clarify with a caregiver
+}
+Only include facts the family actually wrote. Do not invent medical details or diagnoses.`,
+        user: data.description,
+      });
+
+      return z
+        .object({
+          personName: z.string().default(""),
+          area: z.string().default(""),
+          summary: z.string().default(""),
+          supportNeeds: stringArray,
+          schedule: stringArray,
+          languages: stringArray,
+          preferences: stringArray,
+          thingsToDiscuss: stringArray,
+        })
+        .parse(result);
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
+
+/** Rank caregiver profiles against structured requirements. */
+export const rankCaregivers = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        requirements: z.record(z.string(), z.unknown()),
+        caregivers: z.array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            headline: z.string(),
+            about: z.string(),
+            years_experience: z.number(),
+            languages: z.array(z.string()),
+            skills: z.array(z.string()),
+            area: z.string(),
+            availability: z.string(),
+            hourly_rate: z.number(),
+          }),
+        ),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<MatchSuggestion[]> => {
+    try {
+      const result = await callAiJson<{ matches?: unknown }>({
+        system: `Compare caregiver profiles against a family's care requirements and explain the fit.
+
+Return JSON: { "matches": [ { "caregiverId": string, "score": number, "rationale": string, "considerations": string } ] }
+- Include every caregiver given to you, ordered best fit first.
+- "score" is 0-100 and reflects only practical fit: skills, availability, schedule, languages spoken, location and stated preferences.
+- "rationale" is 1-2 warm sentences about why this could work well.
+- "considerations" is one neutral sentence about what the family may want to ask or check.
+- Never comment on trustworthiness, safety, character or background checks.
+- Never use age, gender, caste, religion, ethnicity or any protected characteristic.`,
+        user: JSON.stringify({ requirements: data.requirements, caregivers: data.caregivers }),
+      });
+
+      const parsed = z
+        .array(
+          z.object({
+            caregiverId: z.string(),
+            score: z.number(),
+            rationale: z.string().default(""),
+            considerations: z.string().default(""),
+          }),
+        )
+        .parse(result.matches ?? []);
+
+      const known = new Set(data.caregivers.map((c) => c.id));
+      return parsed
+        .filter((m) => known.has(m.caregiverId))
+        .map((m) => ({ ...m, score: Math.max(0, Math.min(100, Math.round(m.score))) }));
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
+
+/** Turn a family's description of routines into draft care-plan tasks. */
+export const structureCarePlan = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        description: z.string().trim().min(10).max(4000),
+        personName: z.string().default(""),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<DraftTask[]> => {
+    try {
+      const result = await callAiJson<{ tasks?: unknown }>({
+        system: `Convert a family's description of daily routines into a draft list of recurring care tasks.
+
+Return JSON: { "tasks": [ { "title": string, "details": string, "category": string, "timeOfDay": string, "scheduledTime": string, "days": string[] } ] }
+- "category" is one of: routine, meal, medication, mobility, companionship, household, appointment.
+- "timeOfDay" is one of: morning, midday, afternoon, evening, night.
+- "scheduledTime" is 24h "HH:MM" when a time was stated, otherwise "".
+- "days" uses mon,tue,wed,thu,fri,sat,sun. Use all seven when the family says "every day".
+- "title" is short and friendly; "details" repeats only what the family wrote.
+- For medication tasks, repeat the medicine name and dose exactly as written and add nothing.
+  If no dose was written, leave it out. Never invent dosages, timings or medical advice.
+- Do not add tasks the family did not describe.`,
+        user: `Person receiving care: ${data.personName || "not stated"}\n\n${data.description}`,
+      });
+
+      return z
+        .array(
+          z.object({
+            title: z.string(),
+            details: z.string().default(""),
+            category: z.string().default("routine"),
+            timeOfDay: z
+              .enum(["morning", "midday", "afternoon", "evening", "night"])
+              .catch("morning"),
+            scheduledTime: z.string().default(""),
+            days: z
+              .array(z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]))
+              .default(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+          }),
+        )
+        .parse(result.tasks ?? []);
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
+
+/** Write a gentle end-of-day summary from what actually happened. */
+export const generateDaySummary = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        personName: z.string().default(""),
+        caregiverName: z.string().default(""),
+        date: z.string(),
+        entries: z.array(
+          z.object({
+            title: z.string(),
+            time: z.string().default(""),
+            status: z.string(),
+            note: z.string().default(""),
+          }),
+        ),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<string> => {
+    try {
+      return await callAiText({
+        system: `Write a short end-of-day care summary for the family, in 3-5 sentences of warm plain English.
+- Base it only on the task records given. Do not invent events.
+- Mention what went well, then anything still open.
+- For tasks that are not complete, say "hasn't been marked complete yet". Never imply neglect or blame.
+- Do not give medical advice or interpret symptoms.
+- End with one gentle suggestion the family may want to consider, framed as a question or option.
+- No markdown, no headings, no bullet points.`,
+        user: JSON.stringify(data),
+      });
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
+
+/** Suggest schedule adjustments based on how the week has actually gone. */
+export const suggestPlanAdjustments = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        entries: z.array(
+          z.object({
+            taskId: z.string(),
+            title: z.string(),
+            time: z.string().default(""),
+            recent: z.array(z.string()).default([]),
+            notes: z.array(z.string()).default([]),
+          }),
+        ),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<{ taskId: string; suggestion: string; reason: string }[]> => {
+    try {
+      const result = await callAiJson<{ suggestions?: unknown }>({
+        system: `Look at how recurring care tasks have gone recently and suggest gentle schedule adjustments.
+
+Return JSON: { "suggestions": [ { "taskId": string, "suggestion": string, "reason": string } ] }
+- Only suggest changes for tasks with a clear repeated pattern. Return an empty list if nothing stands out.
+- "suggestion" is a concrete, optional change, e.g. "Consider moving this to 9:30am".
+- "reason" is one neutral sentence describing the pattern, never blaming anyone.
+- Never suggest changing medication timing or dosage. For medication tasks, only suggest
+  that the family may want to confirm the timing with the person's doctor.
+- The family decides; phrase everything as a suggestion.`,
+        user: JSON.stringify(data),
+      });
+
+      return z
+        .array(
+          z.object({
+            taskId: z.string(),
+            suggestion: z.string(),
+            reason: z.string().default(""),
+          }),
+        )
+        .parse(result.suggestions ?? []);
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
+
+/** Free-form assistant reply, grounded in the current care context. */
+export const askAssistant = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        role: z.enum(["family", "caregiver"]),
+        context: z.string().default(""),
+        messages: z
+          .array(
+            z.object({
+              role: z.enum(["user", "assistant"]),
+              content: z.string().max(4000),
+            }),
+          )
+          .min(1)
+          .max(30),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<string> => {
+    try {
+      const history = data.messages
+        .map((m) => `${m.role === "user" ? "User" : "Mitra"}: ${m.content}`)
+        .join("\n\n");
+
+      return await callAiText({
+        system: `You are Mitra's assistant, talking to the ${data.role}.
+Be warm, calm and brief (under 150 words). Use plain language and no markdown headings.
+Ground answers in the care context below. If something isn't in the context, say so plainly.
+Never give medical advice, diagnoses or medication instructions — suggest speaking to a doctor instead.
+Never comment on whether anyone is trustworthy, and never suggest monitoring the caregiver.
+For anything not yet done, say "hasn't been marked complete yet".
+
+Care context:
+${data.context || "No care plan has been set up yet."}`,
+        user: history,
+      });
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
