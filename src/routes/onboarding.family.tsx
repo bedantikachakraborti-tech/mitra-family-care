@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Field, OnboardingLayout } from "./onboarding.caregiver";
+import { Field, OnboardingLayout } from "@/components/onboarding";
 
 export const Route = createFileRoute("/onboarding/family")({
   head: () => ({
