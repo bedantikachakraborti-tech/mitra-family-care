@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Check } from "lucide-react";
 import { Field, OnboardingLayout } from "@/components/onboarding";
 import { Label } from "@/components/ui/label";
