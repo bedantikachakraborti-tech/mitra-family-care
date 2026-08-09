@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RoleRouteImport } from './routes/role'
+import { Route as CaregiverIndexRouteImport } from './routes/caregiver.index'
+import { Route as CaregiverProfileRouteImport } from './routes/caregiver.profile'
+import { Route as FamilyIndexRouteImport } from './routes/family.index'
+import { Route as FamilyRequestRouteImport } from './routes/family.request'
 import { Route as OnboardingCaregiverRouteImport } from './routes/onboarding.caregiver'
 import { Route as OnboardingFamilyRouteImport } from './routes/onboarding.family'
 
@@ -22,6 +26,26 @@ const IndexRoute = IndexRouteImport.update({
 const RoleRoute = RoleRouteImport.update({
   id: '/role',
   path: '/role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaregiverIndexRoute = CaregiverIndexRouteImport.update({
+  id: '/caregiver/',
+  path: '/caregiver/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaregiverProfileRoute = CaregiverProfileRouteImport.update({
+  id: '/caregiver/profile',
+  path: '/caregiver/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyIndexRoute = FamilyIndexRouteImport.update({
+  id: '/family/',
+  path: '/family/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyRequestRoute = FamilyRequestRouteImport.update({
+  id: '/family/request',
+  path: '/family/request',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingCaregiverRoute = OnboardingCaregiverRouteImport.update({
@@ -38,36 +62,76 @@ const OnboardingFamilyRoute = OnboardingFamilyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/role': typeof RoleRoute
+  '/caregiver/profile': typeof CaregiverProfileRoute
+  '/family/request': typeof FamilyRequestRoute
   '/onboarding/caregiver': typeof OnboardingCaregiverRoute
   '/onboarding/family': typeof OnboardingFamilyRoute
+  '/caregiver/': typeof CaregiverIndexRoute
+  '/family/': typeof FamilyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/role': typeof RoleRoute
+  '/caregiver/profile': typeof CaregiverProfileRoute
+  '/family/request': typeof FamilyRequestRoute
   '/onboarding/caregiver': typeof OnboardingCaregiverRoute
   '/onboarding/family': typeof OnboardingFamilyRoute
+  '/caregiver': typeof CaregiverIndexRoute
+  '/family': typeof FamilyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/role': typeof RoleRoute
+  '/caregiver/profile': typeof CaregiverProfileRoute
+  '/family/request': typeof FamilyRequestRoute
   '/onboarding/caregiver': typeof OnboardingCaregiverRoute
   '/onboarding/family': typeof OnboardingFamilyRoute
+  '/caregiver/': typeof CaregiverIndexRoute
+  '/family/': typeof FamilyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/role' | '/onboarding/caregiver' | '/onboarding/family'
+  fullPaths:
+    | '/'
+    | '/role'
+    | '/caregiver/profile'
+    | '/family/request'
+    | '/onboarding/caregiver'
+    | '/onboarding/family'
+    | '/caregiver/'
+    | '/family/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/role' | '/onboarding/caregiver' | '/onboarding/family'
+  to:
+    | '/'
+    | '/role'
+    | '/caregiver/profile'
+    | '/family/request'
+    | '/onboarding/caregiver'
+    | '/onboarding/family'
+    | '/caregiver'
+    | '/family'
   id:
-    '__root__' | '/' | '/role' | '/onboarding/caregiver' | '/onboarding/family'
+    | '__root__'
+    | '/'
+    | '/role'
+    | '/caregiver/profile'
+    | '/family/request'
+    | '/onboarding/caregiver'
+    | '/onboarding/family'
+    | '/caregiver/'
+    | '/family/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RoleRoute: typeof RoleRoute
+  CaregiverProfileRoute: typeof CaregiverProfileRoute
+  FamilyRequestRoute: typeof FamilyRequestRoute
   OnboardingCaregiverRoute: typeof OnboardingCaregiverRoute
   OnboardingFamilyRoute: typeof OnboardingFamilyRoute
+  CaregiverIndexRoute: typeof CaregiverIndexRoute
+  FamilyIndexRoute: typeof FamilyIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -84,6 +148,34 @@ declare module '@tanstack/react-router' {
       path: '/role'
       fullPath: '/role'
       preLoaderRoute: typeof RoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/caregiver/': {
+      id: '/caregiver/'
+      path: '/caregiver'
+      fullPath: '/caregiver/'
+      preLoaderRoute: typeof CaregiverIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/caregiver/profile': {
+      id: '/caregiver/profile'
+      path: '/caregiver/profile'
+      fullPath: '/caregiver/profile'
+      preLoaderRoute: typeof CaregiverProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family/': {
+      id: '/family/'
+      path: '/family'
+      fullPath: '/family/'
+      preLoaderRoute: typeof FamilyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family/request': {
+      id: '/family/request'
+      path: '/family/request'
+      fullPath: '/family/request'
+      preLoaderRoute: typeof FamilyRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding/caregiver': {
@@ -106,8 +198,12 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RoleRoute: RoleRoute,
+  CaregiverProfileRoute: CaregiverProfileRoute,
+  FamilyRequestRoute: FamilyRequestRoute,
   OnboardingCaregiverRoute: OnboardingCaregiverRoute,
   OnboardingFamilyRoute: OnboardingFamilyRoute,
+  CaregiverIndexRoute: CaregiverIndexRoute,
+  FamilyIndexRoute: FamilyIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
