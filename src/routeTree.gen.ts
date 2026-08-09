@@ -10,33 +10,180 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssistantRouteImport } from './routes/assistant'
+import { Route as CarePlanRouteImport } from './routes/care-plan'
+import { Route as RoleRouteImport } from './routes/role'
+import { Route as SharedRouteImport } from './routes/shared'
+import { Route as CaregiverIndexRouteImport } from './routes/caregiver.index'
+import { Route as CaregiverProfileRouteImport } from './routes/caregiver.profile'
+import { Route as FamilyIndexRouteImport } from './routes/family.index'
+import { Route as FamilyMatchesRouteImport } from './routes/family.matches'
+import { Route as FamilyRequestRouteImport } from './routes/family.request'
+import { Route as OnboardingCaregiverRouteImport } from './routes/onboarding.caregiver'
+import { Route as OnboardingFamilyRouteImport } from './routes/onboarding.family'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarePlanRoute = CarePlanRouteImport.update({
+  id: '/care-plan',
+  path: '/care-plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoleRoute = RoleRouteImport.update({
+  id: '/role',
+  path: '/role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SharedRoute = SharedRouteImport.update({
+  id: '/shared',
+  path: '/shared',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaregiverIndexRoute = CaregiverIndexRouteImport.update({
+  id: '/caregiver/',
+  path: '/caregiver/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaregiverProfileRoute = CaregiverProfileRouteImport.update({
+  id: '/caregiver/profile',
+  path: '/caregiver/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyIndexRoute = FamilyIndexRouteImport.update({
+  id: '/family/',
+  path: '/family/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyMatchesRoute = FamilyMatchesRouteImport.update({
+  id: '/family/matches',
+  path: '/family/matches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyRequestRoute = FamilyRequestRouteImport.update({
+  id: '/family/request',
+  path: '/family/request',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingCaregiverRoute = OnboardingCaregiverRouteImport.update({
+  id: '/onboarding/caregiver',
+  path: '/onboarding/caregiver',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingFamilyRoute = OnboardingFamilyRouteImport.update({
+  id: '/onboarding/family',
+  path: '/onboarding/family',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/care-plan': typeof CarePlanRoute
+  '/role': typeof RoleRoute
+  '/shared': typeof SharedRoute
+  '/caregiver/profile': typeof CaregiverProfileRoute
+  '/family/matches': typeof FamilyMatchesRoute
+  '/family/request': typeof FamilyRequestRoute
+  '/onboarding/caregiver': typeof OnboardingCaregiverRoute
+  '/onboarding/family': typeof OnboardingFamilyRoute
+  '/caregiver/': typeof CaregiverIndexRoute
+  '/family/': typeof FamilyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/care-plan': typeof CarePlanRoute
+  '/role': typeof RoleRoute
+  '/shared': typeof SharedRoute
+  '/caregiver/profile': typeof CaregiverProfileRoute
+  '/family/matches': typeof FamilyMatchesRoute
+  '/family/request': typeof FamilyRequestRoute
+  '/onboarding/caregiver': typeof OnboardingCaregiverRoute
+  '/onboarding/family': typeof OnboardingFamilyRoute
+  '/caregiver': typeof CaregiverIndexRoute
+  '/family': typeof FamilyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assistant': typeof AssistantRoute
+  '/care-plan': typeof CarePlanRoute
+  '/role': typeof RoleRoute
+  '/shared': typeof SharedRoute
+  '/caregiver/profile': typeof CaregiverProfileRoute
+  '/family/matches': typeof FamilyMatchesRoute
+  '/family/request': typeof FamilyRequestRoute
+  '/onboarding/caregiver': typeof OnboardingCaregiverRoute
+  '/onboarding/family': typeof OnboardingFamilyRoute
+  '/caregiver/': typeof CaregiverIndexRoute
+  '/family/': typeof FamilyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/assistant'
+    | '/care-plan'
+    | '/role'
+    | '/shared'
+    | '/caregiver/profile'
+    | '/family/matches'
+    | '/family/request'
+    | '/onboarding/caregiver'
+    | '/onboarding/family'
+    | '/caregiver/'
+    | '/family/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/assistant'
+    | '/care-plan'
+    | '/role'
+    | '/shared'
+    | '/caregiver/profile'
+    | '/family/matches'
+    | '/family/request'
+    | '/onboarding/caregiver'
+    | '/onboarding/family'
+    | '/caregiver'
+    | '/family'
+  id:
+    | '__root__'
+    | '/'
+    | '/assistant'
+    | '/care-plan'
+    | '/role'
+    | '/shared'
+    | '/caregiver/profile'
+    | '/family/matches'
+    | '/family/request'
+    | '/onboarding/caregiver'
+    | '/onboarding/family'
+    | '/caregiver/'
+    | '/family/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssistantRoute: typeof AssistantRoute
+  CarePlanRoute: typeof CarePlanRoute
+  RoleRoute: typeof RoleRoute
+  SharedRoute: typeof SharedRoute
+  CaregiverProfileRoute: typeof CaregiverProfileRoute
+  FamilyMatchesRoute: typeof FamilyMatchesRoute
+  FamilyRequestRoute: typeof FamilyRequestRoute
+  OnboardingCaregiverRoute: typeof OnboardingCaregiverRoute
+  OnboardingFamilyRoute: typeof OnboardingFamilyRoute
+  CaregiverIndexRoute: typeof CaregiverIndexRoute
+  FamilyIndexRoute: typeof FamilyIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +195,100 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/care-plan': {
+      id: '/care-plan'
+      path: '/care-plan'
+      fullPath: '/care-plan'
+      preLoaderRoute: typeof CarePlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/role': {
+      id: '/role'
+      path: '/role'
+      fullPath: '/role'
+      preLoaderRoute: typeof RoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shared': {
+      id: '/shared'
+      path: '/shared'
+      fullPath: '/shared'
+      preLoaderRoute: typeof SharedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/caregiver/': {
+      id: '/caregiver/'
+      path: '/caregiver'
+      fullPath: '/caregiver/'
+      preLoaderRoute: typeof CaregiverIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/caregiver/profile': {
+      id: '/caregiver/profile'
+      path: '/caregiver/profile'
+      fullPath: '/caregiver/profile'
+      preLoaderRoute: typeof CaregiverProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family/': {
+      id: '/family/'
+      path: '/family'
+      fullPath: '/family/'
+      preLoaderRoute: typeof FamilyIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family/matches': {
+      id: '/family/matches'
+      path: '/family/matches'
+      fullPath: '/family/matches'
+      preLoaderRoute: typeof FamilyMatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family/request': {
+      id: '/family/request'
+      path: '/family/request'
+      fullPath: '/family/request'
+      preLoaderRoute: typeof FamilyRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/caregiver': {
+      id: '/onboarding/caregiver'
+      path: '/onboarding/caregiver'
+      fullPath: '/onboarding/caregiver'
+      preLoaderRoute: typeof OnboardingCaregiverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/family': {
+      id: '/onboarding/family'
+      path: '/onboarding/family'
+      fullPath: '/onboarding/family'
+      preLoaderRoute: typeof OnboardingFamilyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssistantRoute: AssistantRoute,
+  CarePlanRoute: CarePlanRoute,
+  RoleRoute: RoleRoute,
+  SharedRoute: SharedRoute,
+  CaregiverProfileRoute: CaregiverProfileRoute,
+  FamilyMatchesRoute: FamilyMatchesRoute,
+  FamilyRequestRoute: FamilyRequestRoute,
+  OnboardingCaregiverRoute: OnboardingCaregiverRoute,
+  OnboardingFamilyRoute: OnboardingFamilyRoute,
+  CaregiverIndexRoute: CaregiverIndexRoute,
+  FamilyIndexRoute: FamilyIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
