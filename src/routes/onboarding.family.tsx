@@ -7,9 +7,15 @@ export const Route = createFileRoute("/onboarding/family")({
   head: () => ({
     meta: [
       { title: "Family onboarding — Mitra" },
-      { name: "description", content: "Tell Mitra about the person you care for so we can shape the right support." },
+      {
+        name: "description",
+        content: "Tell Mitra about the person you care for so we can shape the right support.",
+      },
       { property: "og:title", content: "Family onboarding — Mitra" },
-      { property: "og:description", content: "A few gentle questions about the person you care for." },
+      {
+        property: "og:description",
+        content: "A few gentle questions about the person you care for.",
+      },
     ],
   }),
   component: FamilyOnboarding,

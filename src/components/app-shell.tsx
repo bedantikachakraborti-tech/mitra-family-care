@@ -65,7 +65,11 @@ export function AppShell({
           </div>
         </Link>
 
-        <SideGroup label={role === "caregiver" ? "Caregiver" : "Family"} items={nav} pathname={pathname} />
+        <SideGroup
+          label={role === "caregiver" ? "Caregiver" : "Family"}
+          items={nav}
+          pathname={pathname}
+        />
         {extras.length > 0 && <SideGroup label="Find care" items={extras} pathname={pathname} />}
 
         <div className="mt-auto rounded-2xl bg-sage p-4 text-sage-foreground">
@@ -98,7 +102,9 @@ export function AppShell({
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
             <div className="min-w-0">
               <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>
-              {subtitle && <p className="mt-1 text-sm text-muted-foreground sm:text-base">{subtitle}</p>}
+              {subtitle && (
+                <p className="mt-1 text-sm text-muted-foreground sm:text-base">{subtitle}</p>
+              )}
             </div>
             {action}
           </div>
@@ -135,10 +141,20 @@ export function AppShell({
   );
 }
 
-function SideGroup({ label, items, pathname }: { label: string; items: NavItem[]; pathname: string }) {
+function SideGroup({
+  label,
+  items,
+  pathname,
+}: {
+  label: string;
+  items: NavItem[];
+  pathname: string;
+}) {
   return (
     <div className="mb-6">
-      <p className="px-3 pb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{label}</p>
+      <p className="px-3 pb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        {label}
+      </p>
       <ul className="space-y-1">
         {items.map((item) => {
           const active = isActive(pathname, item.to);

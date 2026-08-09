@@ -28,7 +28,13 @@ export const caregiver = {
   languages: ["Malayalam", "English", "Kannada"],
   about:
     "I care for elders the way I cared for my own grandmother — patiently, with a lot of laughter and a strict eye on medication times.",
-  skills: ["Dementia care", "Post-surgery recovery", "Meal prep", "Mobility assistance", "Basic physiotherapy"],
+  skills: [
+    "Dementia care",
+    "Post-surgery recovery",
+    "Meal prep",
+    "Mobility assistance",
+    "Basic physiotherapy",
+  ],
   certifications: ["Certified Nursing Assistant (2019)", "First Aid & CPR (renewed 2025)"],
   availability: "Weekdays, 8:00 – 18:00",
 };

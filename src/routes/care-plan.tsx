@@ -9,9 +9,16 @@ export const Route = createFileRoute("/care-plan")({
   head: () => ({
     meta: [
       { title: "Care plan — Mitra" },
-      { name: "description", content: "Kamala's daily care plan: mornings, afternoons and evenings, plus medication timings." },
+      {
+        name: "description",
+        content:
+          "Kamala's daily care plan: mornings, afternoons and evenings, plus medication timings.",
+      },
       { property: "og:title", content: "Care plan — Mitra" },
-      { property: "og:description", content: "The daily rhythm everyone in the care circle follows." },
+      {
+        property: "og:description",
+        content: "The daily rhythm everyone in the care circle follows.",
+      },
     ],
   }),
   component: CarePlan,
@@ -32,7 +39,8 @@ function CarePlan() {
       <SoftCard tone="honey">
         <h2 className="text-lg font-semibold">The short version</h2>
         <p className="mt-2 text-sm opacity-90">
-          Slow mornings, a walk if the weather allows, soft low-salt food, and never rush her on the stairs.
+          Slow mornings, a walk if the weather allows, soft low-salt food, and never rush her on the
+          stairs.
         </p>
       </SoftCard>
 

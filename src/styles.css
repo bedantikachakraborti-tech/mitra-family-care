@@ -62,8 +62,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --shadow-soft: 0 2px 4px -2px oklch(0.4 0.05 60 / 0.08), 0 12px 28px -12px oklch(0.4 0.05 60 / 0.16);
-  --shadow-lift: 0 4px 8px -4px oklch(0.4 0.05 60 / 0.1), 0 24px 48px -20px oklch(0.4 0.05 60 / 0.22);
+  --shadow-soft:
+    0 2px 4px -2px oklch(0.4 0.05 60 / 0.08), 0 12px 28px -12px oklch(0.4 0.05 60 / 0.16);
+  --shadow-lift:
+    0 4px 8px -4px oklch(0.4 0.05 60 / 0.1), 0 24px 48px -20px oklch(0.4 0.05 60 / 0.22);
 }
 
 :root {
@@ -169,12 +171,17 @@
 }
 
 @utility bg-warm-gradient {
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       110% 80% at 12% 0%,
       color-mix(in oklab, var(--honey) 70%, transparent) 0%,
       transparent 55%
     ),
-    radial-gradient(90% 70% at 95% 8%, color-mix(in oklab, var(--sage) 65%, transparent) 0%, transparent 60%),
+    radial-gradient(
+      90% 70% at 95% 8%,
+      color-mix(in oklab, var(--sage) 65%, transparent) 0%,
+      transparent 60%
+    ),
     linear-gradient(180deg, var(--background), var(--background));
 }
 

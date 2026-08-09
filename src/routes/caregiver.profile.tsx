@@ -9,7 +9,10 @@ export const Route = createFileRoute("/caregiver/profile")({
   head: () => ({
     meta: [
       { title: "My profile — Mitra" },
-      { name: "description", content: "Priya Nair's caregiver profile: experience, skills, languages and availability." },
+      {
+        name: "description",
+        content: "Priya Nair's caregiver profile: experience, skills, languages and availability.",
+      },
       { property: "og:title", content: "Caregiver profile — Mitra" },
       { property: "og:description", content: "How families get to know a caregiver on Mitra." },
     ],
@@ -41,7 +44,8 @@ function CaregiverProfile() {
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 text-primary" aria-hidden /> {caregiver.rating} ({caregiver.reviews})
+                <Star className="h-4 w-4 text-primary" aria-hidden /> {caregiver.rating} (
+                {caregiver.reviews})
               </span>
               <span className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" aria-hidden /> {caregiver.location}

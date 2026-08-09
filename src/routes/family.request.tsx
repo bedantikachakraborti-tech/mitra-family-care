@@ -10,7 +10,10 @@ export const Route = createFileRoute("/family/request")({
   head: () => ({
     meta: [
       { title: "New care request — Mitra" },
-      { name: "description", content: "Describe the care you're looking for and Mitra will suggest caregivers who fit." },
+      {
+        name: "description",
+        content: "Describe the care you're looking for and Mitra will suggest caregivers who fit.",
+      },
       { property: "og:title", content: "New care request — Mitra" },
       { property: "og:description", content: "Tell us what kind of help you need, and when." },
     ],
@@ -20,11 +23,22 @@ export const Route = createFileRoute("/family/request")({
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const times = ["Mornings", "Afternoons", "Evenings", "Overnight", "Full day"];
-const support = ["Companionship", "Medication", "Mobility", "Cooking", "Housekeeping", "Doctor visits"];
+const support = [
+  "Companionship",
+  "Medication",
+  "Mobility",
+  "Cooking",
+  "Housekeeping",
+  "Doctor visits",
+];
 
 function CareRequest() {
   return (
-    <AppShell role="family" title="New care request" subtitle="A few details so we can suggest the right people.">
+    <AppShell
+      role="family"
+      title="New care request"
+      subtitle="A few details so we can suggest the right people."
+    >
       <SoftCard>
         <SectionTitle>Who is this for?</SectionTitle>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -38,7 +52,11 @@ function CareRequest() {
             <Label htmlFor="area" className="text-sm font-semibold">
               Neighbourhood
             </Label>
-            <Input id="area" defaultValue="Indiranagar, Bengaluru" className="mt-2 h-12 rounded-2xl" />
+            <Input
+              id="area"
+              defaultValue="Indiranagar, Bengaluru"
+              className="mt-2 h-12 rounded-2xl"
+            />
           </div>
         </div>
       </SoftCard>

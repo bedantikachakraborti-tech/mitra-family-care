@@ -6,7 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pill } from "@/components/ui-kit";
 
-export function Field({ label, id, placeholder }: { label: string; id: string; placeholder: string }) {
+export function Field({
+  label,
+  id,
+  placeholder,
+}: {
+  label: string;
+  id: string;
+  placeholder: string;
+}) {
   return (
     <div>
       <Label htmlFor={id} className="text-sm font-semibold">
@@ -57,7 +65,9 @@ export function OnboardingLayout({
             <li
               key={s}
               className={`rounded-full px-4 py-1.5 text-xs font-semibold ${
-                i === current ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                i === current
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground"
               }`}
             >
               {i + 1}. {s}
@@ -65,7 +75,9 @@ export function OnboardingLayout({
           ))}
         </ol>
 
-        <div className="mt-6 rounded-3xl border border-border bg-card p-5 shadow-soft sm:p-7">{children}</div>
+        <div className="mt-6 rounded-3xl border border-border bg-card p-5 shadow-soft sm:p-7">
+          {children}
+        </div>
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
           <Button asChild variant="ghost" size="lg" className="h-13 rounded-full">

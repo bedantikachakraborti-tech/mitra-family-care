@@ -9,7 +9,11 @@ export const Route = createFileRoute("/shared")({
   head: () => ({
     meta: [
       { title: "Care circle — Mitra" },
-      { name: "description", content: "One shared page for the caregiver, the family and the doctor: updates, notes and who's involved." },
+      {
+        name: "description",
+        content:
+          "One shared page for the caregiver, the family and the doctor: updates, notes and who's involved.",
+      },
       { property: "og:title", content: "Care circle — Mitra" },
       { property: "og:description", content: "Everyone caring for Kamala, on the same page." },
     ],
@@ -39,7 +43,10 @@ function SharedDashboard() {
         <SectionTitle>Who's involved</SectionTitle>
         <ul className="grid gap-3 sm:grid-cols-2">
           {careTeam.map((p) => (
-            <li key={p.name} className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-border p-4">
+            <li
+              key={p.name}
+              className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-border p-4"
+            >
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-secondary text-sm font-semibold">
                 {p.initials}
               </span>

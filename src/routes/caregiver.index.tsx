@@ -1,5 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2, Circle, Pill as PillIcon, Utensils, Footprints, PhoneCall } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  Pill as PillIcon,
+  Utensils,
+  Footprints,
+  PhoneCall,
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
@@ -9,7 +16,10 @@ export const Route = createFileRoute("/caregiver/")({
   head: () => ({
     meta: [
       { title: "Today's Care — Mitra" },
-      { name: "description", content: "Your day with Kamala: the plan, the timings and the little things that matter." },
+      {
+        name: "description",
+        content: "Your day with Kamala: the plan, the timings and the little things that matter.",
+      },
       { property: "og:title", content: "Today's Care — Mitra" },
       { property: "og:description", content: "A caregiver's calm view of the day ahead." },
     ],
@@ -81,8 +91,12 @@ function TaskRow({ task }: { task: Task }) {
         </span>
         <span className="min-w-0">
           <span className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground tabular-nums">{task.time}</span>
-            <span className={`truncate font-medium ${task.done ? "text-muted-foreground line-through" : ""}`}>
+            <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+              {task.time}
+            </span>
+            <span
+              className={`truncate font-medium ${task.done ? "text-muted-foreground line-through" : ""}`}
+            >
               {task.title}
             </span>
           </span>

@@ -1,5 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarHeart, HeartHandshake, MessageCircleHeart, ShieldCheck, Sparkles, Users } from "lucide-react";
+import {
+  CalendarHeart,
+  HeartHandshake,
+  MessageCircleHeart,
+  ShieldCheck,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import heroImage from "@/assets/mitra-hero.jpg";
 import { MitraMark } from "@/components/mitra-mark";
 import { Button } from "@/components/ui/button";
@@ -63,14 +70,19 @@ function Landing() {
               Looking after someone you love, without carrying it alone.
             </h1>
             <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-              Mitra connects families with trusted caregivers and keeps everyone on the same, gentle page — the
-              plan for the day, how it actually went, and what comes next.
+              Mitra connects families with trusted caregivers and keeps everyone on the same, gentle
+              page — the plan for the day, how it actually went, and what comes next.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-13 rounded-full px-8 text-base">
                 <Link to="/role">Find care for my family</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-13 rounded-full px-8 text-base">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-13 rounded-full px-8 text-base"
+              >
                 <Link to="/onboarding/caregiver">I'm a caregiver</Link>
               </Button>
             </div>
@@ -103,7 +115,10 @@ function Landing() {
 
         <section className="grid gap-4 sm:grid-cols-3">
           {features.map((f) => (
-            <article key={f.title} className="rounded-3xl border border-border bg-card p-6 shadow-soft">
+            <article
+              key={f.title}
+              className="rounded-3xl border border-border bg-card p-6 shadow-soft"
+            >
               <span className="grid h-11 w-11 place-items-center rounded-2xl bg-sage text-sage-foreground">
                 <f.icon className="h-5 w-5" aria-hidden />
               </span>
@@ -123,7 +138,12 @@ function Landing() {
                 An assistant that helps you write the update, not another form to fill.
               </h2>
             </div>
-            <Button asChild size="lg" variant="secondary" className="h-13 rounded-full px-8 text-base">
+            <Button
+              asChild
+              size="lg"
+              variant="secondary"
+              className="h-13 rounded-full px-8 text-base"
+            >
               <Link to="/role">Choose your role</Link>
             </Button>
           </div>

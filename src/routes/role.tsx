@@ -6,7 +6,10 @@ export const Route = createFileRoute("/role")({
   head: () => ({
     meta: [
       { title: "Choose your role — Mitra" },
-      { name: "description", content: "Join Mitra as a family arranging care, or as a caregiver offering it." },
+      {
+        name: "description",
+        content: "Join Mitra as a family arranging care, or as a caregiver offering it.",
+      },
       { property: "og:title", content: "Choose your role — Mitra" },
       { property: "og:description", content: "Family or caregiver — start where you are." },
     ],
@@ -58,7 +61,11 @@ function RolePage() {
               <h2 className="mt-5 text-xl font-semibold">{role.title}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{role.text}</p>
               <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-primary">
-                Continue <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
+                Continue{" "}
+                <ArrowRight
+                  className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                  aria-hidden
+                />
               </span>
             </Link>
           ))}

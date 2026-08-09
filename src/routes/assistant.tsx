@@ -10,7 +10,11 @@ export const Route = createFileRoute("/assistant")({
   head: () => ({
     meta: [
       { title: "Assistant — Mitra" },
-      { name: "description", content: "A gentle helper for summarising the day, drafting updates and answering care plan questions." },
+      {
+        name: "description",
+        content:
+          "A gentle helper for summarising the day, drafting updates and answering care plan questions.",
+      },
       { property: "og:title", content: "Assistant — Mitra" },
       { property: "og:description", content: "Help with the writing, not another form to fill." },
     ],
@@ -20,7 +24,11 @@ export const Route = createFileRoute("/assistant")({
 
 function Assistant() {
   return (
-    <AppShell role="caregiver" title="Assistant" subtitle="Here to help with the day's writing and reminders.">
+    <AppShell
+      role="caregiver"
+      title="Assistant"
+      subtitle="Here to help with the day's writing and reminders."
+    >
       <SoftCard tone="sky">
         <p className="flex items-center gap-2 text-sm font-semibold">
           <Sparkles className="h-4 w-4" aria-hidden /> Preview
@@ -33,8 +41,8 @@ function Assistant() {
       <SoftCard className="flex min-h-[22rem] flex-col">
         <div className="flex-1 space-y-4">
           <Bubble from="assistant">
-            Good morning, Priya. Kamala's next task is the 10:00 walk. Want me to draft today's update when you're
-            done?
+            Good morning, Priya. Kamala's next task is the 10:00 walk. Want me to draft today's
+            update when you're done?
           </Bubble>
           <Bubble from="user">Yes, and remind me about the evening tablet.</Bubble>
           <Bubble from="assistant">
@@ -57,7 +65,12 @@ function Assistant() {
           </div>
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
             <Input disabled placeholder="Ask Mitra something…" className="h-13 rounded-full" />
-            <Button size="lg" disabled className="h-13 w-13 shrink-0 rounded-full p-0" aria-label="Send message">
+            <Button
+              size="lg"
+              disabled
+              className="h-13 w-13 shrink-0 rounded-full p-0"
+              aria-label="Send message"
+            >
               <Send className="h-5 w-5" aria-hidden />
             </Button>
           </div>

@@ -19,7 +19,9 @@ export function SoftCard({
   } as const;
 
   return (
-    <section className={cn("rounded-3xl p-5 shadow-soft sm:p-6", tones[tone], className)}>{children}</section>
+    <section className={cn("rounded-3xl p-5 shadow-soft sm:p-6", tones[tone], className)}>
+      {children}
+    </section>
   );
 }
 
@@ -32,7 +34,13 @@ export function SectionTitle({ children, hint }: { children: ReactNode; hint?: R
   );
 }
 
-export function Pill({ children, tone = "muted" }: { children: ReactNode; tone?: "muted" | "sage" | "honey" | "sky" }) {
+export function Pill({
+  children,
+  tone = "muted",
+}: {
+  children: ReactNode;
+  tone?: "muted" | "sage" | "honey" | "sky";
+}) {
   const tones = {
     muted: "bg-secondary text-secondary-foreground",
     sage: "bg-sage text-sage-foreground",
@@ -40,7 +48,12 @@ export function Pill({ children, tone = "muted" }: { children: ReactNode; tone?:
     sky: "bg-sky text-sky-foreground",
   } as const;
   return (
-    <span className={cn("inline-flex items-center rounded-full px-3 py-1 text-xs font-medium", tones[tone])}>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-medium",
+        tones[tone],
+      )}
+    >
       {children}
     </span>
   );

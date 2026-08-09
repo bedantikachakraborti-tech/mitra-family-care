@@ -2,7 +2,8 @@ export function MitraMark({ className }: { className?: string }) {
   return (
     <span
       className={
-        "grid shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground " + (className ?? "h-10 w-10")
+        "grid shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground " +
+        (className ?? "h-10 w-10")
       }
       aria-hidden
     >

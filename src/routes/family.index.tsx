@@ -9,7 +9,10 @@ export const Route = createFileRoute("/family/")({
   head: () => ({
     meta: [
       { title: "Family home — Mitra" },
-      { name: "description", content: "See how Amma's day is going, who's with her, and what's coming next." },
+      {
+        name: "description",
+        content: "See how Amma's day is going, who's with her, and what's coming next.",
+      },
       { property: "og:title", content: "Family home — Mitra" },
       { property: "og:description", content: "A warm daily picture of how care is going." },
     ],
@@ -53,7 +56,15 @@ function FamilyDashboard() {
       </div>
 
       <SoftCard>
-        <SectionTitle hint={<Link to="/shared" className="text-primary">See all</Link>}>Latest updates</SectionTitle>
+        <SectionTitle
+          hint={
+            <Link to="/shared" className="text-primary">
+              See all
+            </Link>
+          }
+        >
+          Latest updates
+        </SectionTitle>
         <ul className="space-y-3">
           {updates.slice(0, 2).map((u) => (
             <li key={u.id} className="rounded-2xl border border-border p-4">
@@ -69,8 +80,18 @@ function FamilyDashboard() {
       </SoftCard>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <QuickLink to="/care-plan" icon={CalendarHeart} title="Care plan" text="The daily rhythm everyone follows." />
-        <QuickLink to="/family/matches" icon={MessageCircleHeart} title="Caregiver matches" text="3 caregivers suggested for weekends." />
+        <QuickLink
+          to="/care-plan"
+          icon={CalendarHeart}
+          title="Care plan"
+          text="The daily rhythm everyone follows."
+        />
+        <QuickLink
+          to="/family/matches"
+          icon={MessageCircleHeart}
+          title="Caregiver matches"
+          text="3 caregivers suggested for weekends."
+        />
       </div>
     </AppShell>
   );
@@ -99,7 +120,10 @@ function QuickLink({
         <span className="block truncate font-semibold">{title}</span>
         <span className="block truncate text-sm text-muted-foreground">{text}</span>
       </span>
-      <ArrowRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" aria-hidden />
+      <ArrowRight
+        className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1"
+        aria-hidden
+      />
     </Link>
   );
 }

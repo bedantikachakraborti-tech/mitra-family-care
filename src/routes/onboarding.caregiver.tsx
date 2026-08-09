@@ -8,9 +8,15 @@ export const Route = createFileRoute("/onboarding/caregiver")({
   head: () => ({
     meta: [
       { title: "Caregiver onboarding — Mitra" },
-      { name: "description", content: "Set up your caregiver profile on Mitra in a few calm steps." },
+      {
+        name: "description",
+        content: "Set up your caregiver profile on Mitra in a few calm steps.",
+      },
       { property: "og:title", content: "Caregiver onboarding — Mitra" },
-      { property: "og:description", content: "Tell families who you are and how you like to work." },
+      {
+        property: "og:description",
+        content: "Tell families who you are and how you like to work.",
+      },
     ],
   }),
   component: CaregiverOnboarding,
@@ -78,7 +84,8 @@ function CaregiverOnboarding() {
           <Check className="h-4 w-4" aria-hidden /> Verification
         </p>
         <p className="mt-1 text-sm opacity-90">
-          We'll ask for an ID and one reference before your profile goes live. It usually takes a day or two.
+          We'll ask for an ID and one reference before your profile goes live. It usually takes a
+          day or two.
         </p>
       </div>
     </OnboardingLayout>
