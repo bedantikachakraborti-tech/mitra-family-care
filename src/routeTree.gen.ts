@@ -10,33 +10,64 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RoleRouteImport } from './routes/role'
+import { Route as OnboardingCaregiverRouteImport } from './routes/onboarding.caregiver'
+import { Route as OnboardingFamilyRouteImport } from './routes/onboarding.family'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoleRoute = RoleRouteImport.update({
+  id: '/role',
+  path: '/role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingCaregiverRoute = OnboardingCaregiverRouteImport.update({
+  id: '/onboarding/caregiver',
+  path: '/onboarding/caregiver',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingFamilyRoute = OnboardingFamilyRouteImport.update({
+  id: '/onboarding/family',
+  path: '/onboarding/family',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/role': typeof RoleRoute
+  '/onboarding/caregiver': typeof OnboardingCaregiverRoute
+  '/onboarding/family': typeof OnboardingFamilyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/role': typeof RoleRoute
+  '/onboarding/caregiver': typeof OnboardingCaregiverRoute
+  '/onboarding/family': typeof OnboardingFamilyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/role': typeof RoleRoute
+  '/onboarding/caregiver': typeof OnboardingCaregiverRoute
+  '/onboarding/family': typeof OnboardingFamilyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/role' | '/onboarding/caregiver' | '/onboarding/family'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/role' | '/onboarding/caregiver' | '/onboarding/family'
+  id:
+    '__root__' | '/' | '/role' | '/onboarding/caregiver' | '/onboarding/family'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RoleRoute: typeof RoleRoute
+  OnboardingCaregiverRoute: typeof OnboardingCaregiverRoute
+  OnboardingFamilyRoute: typeof OnboardingFamilyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +79,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/role': {
+      id: '/role'
+      path: '/role'
+      fullPath: '/role'
+      preLoaderRoute: typeof RoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/caregiver': {
+      id: '/onboarding/caregiver'
+      path: '/onboarding/caregiver'
+      fullPath: '/onboarding/caregiver'
+      preLoaderRoute: typeof OnboardingCaregiverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/family': {
+      id: '/onboarding/family'
+      path: '/onboarding/family'
+      fullPath: '/onboarding/family'
+      preLoaderRoute: typeof OnboardingFamilyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RoleRoute: RoleRoute,
+  OnboardingCaregiverRoute: OnboardingCaregiverRoute,
+  OnboardingFamilyRoute: OnboardingFamilyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
