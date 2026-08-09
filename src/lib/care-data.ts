@@ -159,7 +159,7 @@ export async function saveCareRequest(input: {
         person_name: input.structured.personName,
         area: input.structured.area,
         raw_description: input.rawDescription,
-        structured: input.structured as unknown as Record<string, unknown>,
+        structured: input.structured as unknown as never,
       })
       .select("*")
       .single(),
@@ -207,7 +207,8 @@ export async function ensurePlan(requestId: string): Promise<string> {
   if (existing?.[0]) return existing[0].id;
   const created = unwrap(
     await supabase.from("care_plans").insert({ request_id: requestId }).select("id").single(),
-  );
+  ) as { id: string } | null;
+  if (!created) throw new Error("Could not create the care plan.");
   return created.id;
 }
 
