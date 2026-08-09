@@ -14,7 +14,277 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      care_plans: {
+        Row: {
+          created_at: string
+          id: string
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_plans_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "care_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_requests: {
+        Row: {
+          area: string
+          created_at: string
+          id: string
+          person_name: string
+          raw_description: string
+          selected_caregiver_id: string | null
+          structured: Json
+        }
+        Insert: {
+          area?: string
+          created_at?: string
+          id?: string
+          person_name?: string
+          raw_description?: string
+          selected_caregiver_id?: string | null
+          structured?: Json
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          id?: string
+          person_name?: string
+          raw_description?: string
+          selected_caregiver_id?: string | null
+          structured?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_requests_selected_caregiver_id_fkey"
+            columns: ["selected_caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_tasks: {
+        Row: {
+          category: string
+          created_at: string
+          days: string[]
+          details: string
+          id: string
+          is_active: boolean
+          plan_id: string
+          scheduled_time: string
+          source: string
+          time_of_day: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          days?: string[]
+          details?: string
+          id?: string
+          is_active?: boolean
+          plan_id: string
+          scheduled_time?: string
+          source?: string
+          time_of_day?: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          days?: string[]
+          details?: string
+          id?: string
+          is_active?: boolean
+          plan_id?: string
+          scheduled_time?: string
+          source?: string
+          time_of_day?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_tasks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "care_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregiver_matches: {
+        Row: {
+          caregiver_id: string
+          considerations: string
+          created_at: string
+          id: string
+          rationale: string
+          request_id: string
+          score: number
+        }
+        Insert: {
+          caregiver_id: string
+          considerations?: string
+          created_at?: string
+          id?: string
+          rationale?: string
+          request_id: string
+          score?: number
+        }
+        Update: {
+          caregiver_id?: string
+          considerations?: string
+          created_at?: string
+          id?: string
+          rationale?: string
+          request_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caregiver_matches_caregiver_id_fkey"
+            columns: ["caregiver_id"]
+            isOneToOne: false
+            referencedRelation: "caregivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caregiver_matches_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "care_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caregivers: {
+        Row: {
+          about: string
+          area: string
+          availability: string
+          created_at: string
+          headline: string
+          hourly_rate: number
+          id: string
+          initials: string
+          languages: string[]
+          name: string
+          skills: string[]
+          years_experience: number
+        }
+        Insert: {
+          about?: string
+          area?: string
+          availability?: string
+          created_at?: string
+          headline?: string
+          hourly_rate?: number
+          id?: string
+          initials?: string
+          languages?: string[]
+          name: string
+          skills?: string[]
+          years_experience?: number
+        }
+        Update: {
+          about?: string
+          area?: string
+          availability?: string
+          created_at?: string
+          headline?: string
+          hourly_rate?: number
+          id?: string
+          initials?: string
+          languages?: string[]
+          name?: string
+          skills?: string[]
+          years_experience?: number
+        }
+        Relationships: []
+      }
+      day_summaries: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          plan_id: string
+          summary_date: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          plan_id: string
+          summary_date?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          plan_id?: string
+          summary_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "day_summaries_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "care_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_logs: {
+        Row: {
+          id: string
+          log_date: string
+          note: string
+          status: string
+          task_id: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          log_date?: string
+          note?: string
+          status?: string
+          task_id: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          log_date?: string
+          note?: string
+          status?: string
+          task_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "care_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
