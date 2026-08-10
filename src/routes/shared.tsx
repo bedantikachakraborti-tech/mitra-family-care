@@ -108,7 +108,7 @@ function SharedDashboard() {
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{task.title}</span>
-                    <span className="block truncate text-sm text-muted-foreground">
+                    <span className="block text-sm text-muted-foreground">
                       {task.scheduled_time || task.time_of_day} ·{" "}
                       {status === "done"
                         ? "marked complete"
@@ -126,7 +126,7 @@ function SharedDashboard() {
       </SoftCard>
 
       <SoftCard tone="honey">
-        <SectionTitle hint="Written from today's records">Today's summary</SectionTitle>
+        <SectionTitle hint="From today's records">Summary</SectionTitle>
         {summary.data?.content ? (
           <p className="text-sm opacity-90">{summary.data.content}</p>
         ) : (
