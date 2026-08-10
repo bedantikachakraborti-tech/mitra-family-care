@@ -25,8 +25,9 @@ Hard rules you must never break:
 - Never suggest monitoring or surveillance of a caregiver.
 - When a task is not yet done, use neutral wording such as
   "hasn't been marked complete yet" — never imply neglect or blame.
-- Output valid JSON only, matching the requested shape. No markdown fences.
 `.trim();
+
+const JSON_RULE = "Output valid JSON only, matching the requested shape. No markdown fences.";
 
 export async function callAiJson<T>(params: {
   system: string;
@@ -46,7 +47,7 @@ export async function callAiJson<T>(params: {
       reasoning_effort: "none",
       response_format: { type: "json_object" },
       messages: [
-        { role: "system", content: `${SAFETY_RULES}\n\n${params.system}` },
+        { role: "system", content: `${SAFETY_RULES}\n${JSON_RULE}\n\n${params.system}` },
         { role: "user", content: params.user },
       ],
     }),
@@ -82,7 +83,7 @@ export async function callAiText(params: { system: string; user: string }): Prom
       model: MODEL,
       reasoning_effort: "none",
       messages: [
-        { role: "system", content: `${SAFETY_RULES}\n\n${params.system}` },
+        { role: "system", content: `${SAFETY_RULES}\n\nReply in plain sentences. Do not output JSON or markdown.\n\n${params.system}` },
         { role: "user", content: params.user },
       ],
     }),
