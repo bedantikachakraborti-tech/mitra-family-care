@@ -1,9 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CheckCircle2, Timer } from "lucide-react";
+
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
-import { careTeam, updates } from "@/lib/demo-data";
+import { summaryQuery } from "@/lib/care-data";
+import { DAY_LABELS, type DayKey } from "@/lib/care-types";
+import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
 export const Route = createFileRoute("/shared")({
   head: () => ({
@@ -12,75 +16,186 @@ export const Route = createFileRoute("/shared")({
       {
         name: "description",
         content:
-          "One shared page for the caregiver, the family and the doctor: updates, notes and who's involved.",
+          "One shared workspace for the family and the matched caregiver: today's progress, the care plan and the notes that matter.",
       },
       { property: "og:title", content: "Care circle — Mitra" },
-      { property: "og:description", content: "Everyone caring for Kamala, on the same page." },
+      { property: "og:description", content: "The family and caregiver, on the same page." },
     ],
   }),
   component: SharedDashboard,
 });
 
 function SharedDashboard() {
+  const { request, caregiver, tasks, logs, planId, date } = useCareContext();
+  const summary = useQuery(summaryQuery(planId ?? undefined, date));
+
+  // The shared workspace only exists once a family and a caregiver are matched.
+  if (!request || !request.selected_caregiver_id || !caregiver) {
+    return (
+      <AppShell role="family" title="Care circle">
+        <SoftCard>
+          <p className="text-sm text-muted-foreground">
+            This shared workspace opens once a family and a caregiver are matched. Choose a
+            caregiver and you'll both see the same plan, progress and notes here.
+          </p>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <Button asChild size="lg" className="h-13 rounded-full px-6">
+              <Link to="/family/matches">See suggested caregivers</Link>
+            </Button>
+            <Button asChild size="lg" variant="ghost" className="h-13 rounded-full">
+              <Link to="/family/request">Start a care request</Link>
+            </Button>
+          </div>
+        </SoftCard>
+      </AppShell>
+    );
+  }
+
+  const today = tasksForDay(tasks);
+  const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
+  const upcoming = today.filter((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
+  const notes = logs.filter((l) => l.note.trim().length > 0);
+
   return (
     <AppShell
       role="family"
       title="Care circle"
-      subtitle="Kamala Ramesh · shared between family and caregivers"
-      action={
-        <Button size="lg" variant="outline" className="h-12 rounded-full px-6">
-          Invite someone
-        </Button>
-      }
+      subtitle={`${request.person_name || "Your family member"} · shared with ${caregiver.name}`}
     >
       <div className="grid gap-3 sm:grid-cols-3">
-        <StatTile label="People" value={`${careTeam.length}`} hint="Family, caregiver, doctor" />
-        <StatTile label="Updates this week" value="9" hint="Last one 2 hours ago" />
-        <StatTile label="Next visit" value="Tomorrow" hint="Priya, 8:00" />
+        <StatTile label="Today's progress" value={`${done} of ${today.length}`} hint="Marked complete" />
+        <StatTile
+          label="Still to come"
+          value={`${upcoming.length}`}
+          hint={upcoming[0]?.title ?? "Nothing pending"}
+        />
+        <StatTile label="Caregiver" value={caregiver.name.split(" ")[0] ?? ""} hint={caregiver.headline} />
       </div>
 
       <SoftCard>
         <SectionTitle>Who's involved</SectionTitle>
         <ul className="grid gap-3 sm:grid-cols-2">
-          {careTeam.map((p) => (
-            <li
-              key={p.name}
-              className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-border p-4"
-            >
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-secondary text-sm font-semibold">
-                {p.initials}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate font-medium">{p.name}</span>
-                <span className="block truncate text-sm text-muted-foreground">{p.role}</span>
-              </span>
-            </li>
-          ))}
+          <Person name={request.person_name || "Family member"} role="Receiving care" initials="•" />
+          <Person name={caregiver.name} role={caregiver.headline} initials={caregiver.initials} />
         </ul>
       </SoftCard>
 
       <SoftCard>
-        <SectionTitle hint="Visible to everyone">Shared notes</SectionTitle>
-        <Textarea rows={3} className="rounded-2xl" placeholder="Add a note for the care circle…" />
-        <div className="mt-3 flex justify-end">
-          <Button size="lg" className="h-12 rounded-full px-6">
-            Post note
-          </Button>
-        </div>
+        <SectionTitle hint={`${today.length} today`}>Today</SectionTitle>
+        {today.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No tasks scheduled for today yet.{" "}
+            <Link to="/care-plan" className="underline">
+              Build the care plan
+            </Link>
+            .
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {today.map((task) => {
+              const status = logFor(logs, task.id)?.status ?? "pending";
+              return (
+                <li
+                  key={task.id}
+                  className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border p-4"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary">
+                    {status === "done" ? (
+                      <CheckCircle2 className="h-4.5 w-4.5" aria-hidden />
+                    ) : (
+                      <Timer className="h-4.5 w-4.5" aria-hidden />
+                    )}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{task.title}</span>
+                    <span className="block truncate text-sm text-muted-foreground">
+                      {task.scheduled_time || task.time_of_day} ·{" "}
+                      {status === "done"
+                        ? "marked complete"
+                        : status === "postponed"
+                          ? "postponed"
+                          : "hasn't been marked complete yet"}
+                    </span>
+                  </span>
+                  <Pill tone={status === "done" ? "sage" : "muted"}>{task.category}</Pill>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </SoftCard>
 
-        <ul className="mt-6 space-y-3">
-          {updates.map((u) => (
-            <li key={u.id} className="rounded-2xl border border-border p-4">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-                <p className="min-w-0 truncate text-sm font-semibold">{u.author}</p>
-                <Pill tone="sage">{u.mood}</Pill>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">{u.text}</p>
-              <p className="mt-2 text-xs text-muted-foreground">{u.time}</p>
-            </li>
-          ))}
-        </ul>
+      <SoftCard tone="honey">
+        <SectionTitle hint="Written from today's records">Today's summary</SectionTitle>
+        {summary.data?.content ? (
+          <p className="text-sm opacity-90">{summary.data.content}</p>
+        ) : (
+          <p className="text-sm opacity-90">
+            No summary yet today. The caregiver can write one from the{" "}
+            <Link to="/assistant" className="underline">
+              assistant
+            </Link>
+            .
+          </p>
+        )}
+      </SoftCard>
+
+      <SoftCard>
+        <SectionTitle hint="From the caregiver">Care notes</SectionTitle>
+        {notes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No notes recorded today.</p>
+        ) : (
+          <ul className="space-y-3">
+            {notes.map((note) => {
+              const task = tasks.find((t) => t.id === note.task_id);
+              return (
+                <li key={note.id} className="rounded-2xl border border-border p-4">
+                  <p className="truncate text-sm font-semibold">{task?.title ?? "Task"}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{note.note}</p>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </SoftCard>
+
+      <SoftCard>
+        <SectionTitle hint="Confirmed by the family">The care plan</SectionTitle>
+        {tasks.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No plan confirmed yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {tasks.map((task) => (
+              <li key={task.id} className="rounded-2xl border border-border p-4">
+                <p className="truncate font-medium">{task.title}</p>
+                {task.details && (
+                  <p className="mt-1 text-sm text-muted-foreground">{task.details}</p>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Pill tone="sky">{task.scheduled_time || task.time_of_day}</Pill>
+                  {task.days.map((d) => (
+                    <Pill key={d}>{DAY_LABELS[d as DayKey] ?? d}</Pill>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </SoftCard>
     </AppShell>
+  );
+}
+
+function Person({ name, role, initials }: { name: string; role: string; initials: string }) {
+  return (
+    <li className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-2xl border border-border p-4">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-secondary text-sm font-semibold">
+        {initials}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate font-medium">{name}</span>
+        <span className="block truncate text-sm text-muted-foreground">{role}</span>
+      </span>
+    </li>
   );
 }

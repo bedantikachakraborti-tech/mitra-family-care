@@ -1,9 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Clock, Pill as PillIcon } from "lucide-react";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { Clock, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Pill, SoftCard, SectionTitle } from "@/components/ui-kit";
-import { carePlanSections, careRecipient, medications } from "@/lib/demo-data";
+import { structureCarePlan } from "@/lib/ai.functions";
+import { addTasks, deleteTask, ensurePlan, updateTask } from "@/lib/care-data";
+import {
+  DAYS,
+  DAY_LABELS,
+  TIME_OF_DAY,
+  type CareTask,
+  type DayKey,
+  type DraftTask,
+  type TimeOfDay,
+} from "@/lib/care-types";
+import { useCareContext } from "@/lib/use-care";
 
 export const Route = createFileRoute("/care-plan")({
   head: () => ({
@@ -12,7 +30,7 @@ export const Route = createFileRoute("/care-plan")({
       {
         name: "description",
         content:
-          "Kamala's daily care plan: mornings, afternoons and evenings, plus medication timings.",
+          "Describe daily routines in your own words; Mitra drafts a care plan you review, edit and confirm before anything is saved.",
       },
       { property: "og:title", content: "Care plan — Mitra" },
       {
@@ -21,82 +39,329 @@ export const Route = createFileRoute("/care-plan")({
       },
     ],
   }),
-  component: CarePlan,
+  component: CarePlanPage,
 });
 
-function CarePlan() {
+const emptyDraft: DraftTask = {
+  title: "",
+  details: "",
+  category: "routine",
+  timeOfDay: "morning",
+  scheduledTime: "",
+  days: [...DAYS],
+};
+
+function CarePlanPage() {
+  const queryClient = useQueryClient();
+  const { request, planId, tasks, caregiver } = useCareContext();
+  const [description, setDescription] = useState("");
+  const [drafts, setDrafts] = useState<DraftTask[] | null>(null);
+
+  const parsePlan = useServerFn(structureCarePlan);
+
+  const build = useMutation({
+    mutationFn: async () => {
+      const result = await parsePlan({
+        data: { description, personName: request?.person_name ?? "" },
+      });
+      return result;
+    },
+    onSuccess: (result) => {
+      setDrafts(result);
+      if (result.length === 0) toast.message("Mitra couldn't find any routines in that text yet.");
+      else toast.success("Draft ready — review it before saving");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const confirm = useMutation({
+    mutationFn: async () => {
+      if (!request) throw new Error("Create a care request first.");
+      const cleaned = (drafts ?? []).filter((d) => d.title.trim().length > 0);
+      if (cleaned.length === 0) throw new Error("Add at least one task before saving.");
+      const id = planId ?? (await ensurePlan(request.id));
+      await addTasks(id, cleaned, "ai");
+    },
+    onSuccess: async () => {
+      setDrafts(null);
+      setDescription("");
+      await queryClient.invalidateQueries();
+      toast.success("Care plan saved");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const removeSaved = useMutation({
+    mutationFn: (taskId: string) => deleteTask(taskId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["care-tasks"] }),
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const editSaved = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<CareTask> }) => updateTask(id, patch),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["care-tasks"] }),
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  if (!request) {
+    return (
+      <AppShell role="family" title="Care plan">
+        <SoftCard>
+          <p className="text-sm text-muted-foreground">
+            Start with a care request so Mitra knows who the plan is for.
+          </p>
+          <Button asChild size="lg" className="mt-5 h-13 rounded-full">
+            <Link to="/family/request">Start a care request</Link>
+          </Button>
+        </SoftCard>
+      </AppShell>
+    );
+  }
+
+  const patchDraft = (index: number, patch: Partial<DraftTask>) =>
+    setDrafts((current) =>
+      (current ?? []).map((d, i) => (i === index ? { ...d, ...patch } : d)),
+    );
+
   return (
     <AppShell
-      role="caregiver"
+      role="family"
       title="Care plan"
-      subtitle={`${careRecipient.name} · updated by Anita, 2 days ago`}
-      action={
-        <Button size="lg" variant="outline" className="h-12 rounded-full px-6">
-          Suggest a change
-        </Button>
-      }
+      subtitle={`${request.person_name || "Your family member"}${
+        caregiver ? ` · shared with ${caregiver.name}` : ""
+      }`}
     >
       <SoftCard tone="honey">
-        <h2 className="text-lg font-semibold">The short version</h2>
+        <h2 className="text-lg font-semibold">Describe the day in your own words</h2>
         <p className="mt-2 text-sm opacity-90">
-          Slow mornings, a walk if the weather allows, soft low-salt food, and never rush her on the
-          stairs.
+          Mitra turns it into a draft of recurring tasks. Nothing is saved until you confirm. Only
+          medicines and doses you write yourself are ever included.
         </p>
-      </SoftCard>
-
-      <div className="grid gap-4 lg:grid-cols-3">
-        {carePlanSections.map((section) => (
-          <SoftCard key={section.id}>
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-              <h2 className="min-w-0 truncate text-lg font-semibold">{section.title}</h2>
-              <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" aria-hidden /> {section.window}
-              </span>
-            </div>
-            <ul className="mt-4 space-y-2.5">
-              {section.items.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
-                  <span className="text-muted-foreground">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </SoftCard>
-        ))}
-      </div>
-
-      <SoftCard>
-        <SectionTitle hint="Reviewed by Dr. Meera Iyer">Medication</SectionTitle>
-        <ul className="space-y-2">
-          {medications.map((m) => (
-            <li
-              key={m.name}
-              className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-border p-4"
-            >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sky text-sky-foreground">
-                <PillIcon className="h-4.5 w-4.5" aria-hidden />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate font-medium">
-                  {m.name} · {m.dose}
-                </span>
-                <span className="block truncate text-sm text-muted-foreground">{m.when}</span>
-              </span>
-              <Pill tone="sage">Active</Pill>
-            </li>
-          ))}
-        </ul>
-      </SoftCard>
-
-      <SoftCard>
-        <SectionTitle>Good to know</SectionTitle>
-        <p className="text-sm text-muted-foreground">{careRecipient.notes}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {careRecipient.languages.map((l) => (
-            <Pill key={l}>{l}</Pill>
-          ))}
+        <Textarea
+          rows={6}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          placeholder="She wakes around 7, likes tea before anything else. Short walk at 10 if it isn't too hot. Lunch at 12:30, soft food, low salt…"
+          className="mt-4 rounded-2xl bg-card text-foreground"
+        />
+        <div className="mt-4 flex justify-end">
+          <Button
+            size="lg"
+            className="h-13 rounded-full px-6"
+            disabled={build.isPending || description.trim().length < 10}
+            onClick={() => build.mutate()}
+          >
+            {build.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="mr-2 h-4 w-4" />
+            )}
+            Draft the plan
+          </Button>
         </div>
       </SoftCard>
+
+      {drafts && (
+        <SoftCard>
+          <SectionTitle hint="Nothing is saved yet">Review the draft</SectionTitle>
+          <ul className="space-y-4">
+            {drafts.map((draft, index) => (
+              <li key={index} className="rounded-2xl border border-border p-4">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                  <Input
+                    value={draft.title}
+                    onChange={(event) => patchDraft(index, { title: event.target.value })}
+                    placeholder="Task title"
+                    className="h-12 rounded-2xl"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    className="h-12 w-12 rounded-full p-0"
+                    aria-label="Remove task"
+                    onClick={() =>
+                      setDrafts((current) => (current ?? []).filter((_, i) => i !== index))
+                    }
+                  >
+                    <Trash2 className="h-4.5 w-4.5" aria-hidden />
+                  </Button>
+                </div>
+
+                <Textarea
+                  rows={2}
+                  value={draft.details}
+                  onChange={(event) => patchDraft(index, { details: event.target.value })}
+                  placeholder="Anything helpful to know"
+                  className="mt-3 rounded-2xl"
+                />
+
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <label className="text-sm">
+                    <span className="text-muted-foreground">Time</span>
+                    <Input
+                      type="time"
+                      value={draft.scheduledTime}
+                      onChange={(event) => patchDraft(index, { scheduledTime: event.target.value })}
+                      className="mt-1 h-12 rounded-2xl"
+                    />
+                  </label>
+                  <label className="text-sm">
+                    <span className="text-muted-foreground">Part of day</span>
+                    <select
+                      value={draft.timeOfDay}
+                      onChange={(event) =>
+                        patchDraft(index, { timeOfDay: event.target.value as TimeOfDay })
+                      }
+                      className="mt-1 h-12 w-full rounded-2xl border border-border bg-background px-3 text-sm"
+                    >
+                      {TIME_OF_DAY.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-sm">
+                    <span className="text-muted-foreground">Category</span>
+                    <Input
+                      value={draft.category}
+                      onChange={(event) => patchDraft(index, { category: event.target.value })}
+                      className="mt-1 h-12 rounded-2xl"
+                    />
+                  </label>
+                </div>
+
+                <DayPicker
+                  value={draft.days}
+                  onChange={(days) => patchDraft(index, { days })}
+                  className="mt-3"
+                />
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-12 rounded-full"
+              onClick={() => setDrafts((current) => [...(current ?? []), { ...emptyDraft }])}
+            >
+              <Plus className="mr-2 h-4 w-4" aria-hidden /> Add a task
+            </Button>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+              <Button
+                variant="ghost"
+                size="lg"
+                className="h-12 rounded-full"
+                onClick={() => setDrafts(null)}
+              >
+                Discard draft
+              </Button>
+              <Button
+                size="lg"
+                className="h-12 rounded-full px-6"
+                disabled={confirm.isPending}
+                onClick={() => confirm.mutate()}
+              >
+                {confirm.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Confirm and save
+              </Button>
+            </div>
+          </div>
+        </SoftCard>
+      )}
+
+      <SoftCard>
+        <SectionTitle hint={`${tasks.length} saved`}>The plan today</SectionTitle>
+        {tasks.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No tasks saved yet. Describe the routines above and Mitra will draft them for you.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {tasks.map((task) => (
+              <li key={task.id} className="rounded-2xl border border-border p-4">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" aria-hidden />
+                      <span className="tabular-nums">{task.scheduled_time || task.time_of_day}</span>
+                    </p>
+                    <p className="mt-1 truncate font-medium">{task.title}</p>
+                    {task.details && (
+                      <p className="mt-1 text-sm text-muted-foreground">{task.details}</p>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Pill tone="sage">{task.category}</Pill>
+                      {task.days.map((d) => (
+                        <Pill key={d}>{DAY_LABELS[d as DayKey] ?? d}</Pill>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-col gap-2">
+                    <Input
+                      type="time"
+                      value={task.scheduled_time}
+                      onChange={(event) =>
+                        editSaved.mutate({
+                          id: task.id,
+                          patch: { scheduled_time: event.target.value },
+                        })
+                      }
+                      className="h-11 w-32 rounded-2xl"
+                      aria-label={`Time for ${task.title}`}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="lg"
+                      className="h-11 rounded-full"
+                      onClick={() => removeSaved.mutate(task.id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" aria-hidden /> Remove
+                    </Button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </SoftCard>
     </AppShell>
+  );
+}
+
+function DayPicker({
+  value,
+  onChange,
+  className,
+}: {
+  value: DayKey[];
+  onChange: (days: DayKey[]) => void;
+  className?: string;
+}) {
+  return (
+    <div className={`flex flex-wrap gap-2 ${className ?? ""}`}>
+      {DAYS.map((day) => {
+        const active = value.includes(day);
+        return (
+          <button
+            key={day}
+            type="button"
+            onClick={() =>
+              onChange(active ? value.filter((d) => d !== day) : [...value, day])
+            }
+            className={`min-h-11 rounded-full px-4 text-sm font-medium transition-colors ${
+              active
+                ? "bg-primary text-primary-foreground"
+                : "border border-border text-muted-foreground"
+            }`}
+            aria-pressed={active}
+          >
+            {DAY_LABELS[day]}
+          </button>
+        );
+      })}
+    </div>
   );
 }
