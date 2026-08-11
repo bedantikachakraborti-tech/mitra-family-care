@@ -42,7 +42,7 @@ function CaregiverOnboarding() {
       steps={steps}
       current={0}
       backTo="/role"
-      nextTo="/caregiver"
+      nextTo="/caregiver/profile"
       nextLabel="Go to my dashboard"
     >
       <div className="grid gap-5 sm:grid-cols-2">

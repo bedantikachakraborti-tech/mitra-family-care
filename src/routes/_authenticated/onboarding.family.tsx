@@ -40,7 +40,7 @@ function FamilyOnboarding() {
       steps={["Your family", "Their needs", "Schedule"]}
       current={0}
       backTo="/role"
-      nextTo="/family"
+      nextTo="/family/profile"
       nextLabel="Go to family home"
     >
       <div className="grid gap-5 sm:grid-cols-2">
