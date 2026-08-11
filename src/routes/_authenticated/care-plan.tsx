@@ -23,7 +23,7 @@ import {
 } from "@/lib/care-types";
 import { useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/care-plan")({
+export const Route = createFileRoute("/_authenticated/care-plan")({
   head: () => ({
     meta: [
       { title: "Care plan — Mitra" },

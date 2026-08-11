@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, OnboardingLayout } from "@/components/onboarding";
 
-export const Route = createFileRoute("/onboarding/family")({
+export const Route = createFileRoute("/_authenticated/onboarding/family")({
   head: () => ({
     meta: [
       { title: "Family onboarding — Mitra" },
@@ -40,7 +40,7 @@ function FamilyOnboarding() {
       steps={["Your family", "Their needs", "Schedule"]}
       current={0}
       backTo="/role"
-      nextTo="/family"
+      nextTo="/family/profile"
       nextLabel="Go to family home"
     >
       <div className="grid gap-5 sm:grid-cols-2">

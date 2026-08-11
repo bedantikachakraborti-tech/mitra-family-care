@@ -76,8 +76,35 @@ export type TaskLog = {
   log_date: string;
   status: TaskStatus;
   note: string;
+  completed_at: string | null;
+  postponed_to: string;
   updated_at: string;
 };
+
+/** Formats "14:05" or an ISO timestamp as a friendly clock time. */
+export function clockTime(value: string | null | undefined): string {
+  if (!value) return "";
+  const match = /^(\d{1,2}):(\d{2})/.exec(value);
+  const date = match
+    ? new Date(2000, 0, 1, Number(match[1]), Number(match[2]))
+    : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+/** One neutral sentence describing where a task stands right now. */
+export function statusLabel(log: TaskLog | undefined): string {
+  if (log?.status === "done") {
+    const at = clockTime(log.completed_at);
+    return at ? `Completed at ${at}` : "Marked complete";
+  }
+  if (log?.status === "postponed") {
+    const at = clockTime(log.postponed_to);
+    return at ? `Postponed — new time ${at}` : "Postponed for now";
+  }
+  return "This task hasn't been marked complete yet.";
+}
+
 
 export type Caregiver = {
   id: string;
@@ -91,6 +118,9 @@ export type Caregiver = {
   area: string;
   availability: string;
   hourly_rate: number;
+  certifications: string[];
+  specialties: string[];
+  user_id?: string | null;
 };
 
 export type CareRequest = {

@@ -44,6 +44,7 @@ export type Database = {
         Row: {
           area: string
           created_at: string
+          family_user_id: string | null
           id: string
           person_name: string
           raw_description: string
@@ -53,6 +54,7 @@ export type Database = {
         Insert: {
           area?: string
           created_at?: string
+          family_user_id?: string | null
           id?: string
           person_name?: string
           raw_description?: string
@@ -62,6 +64,7 @@ export type Database = {
         Update: {
           area?: string
           created_at?: string
+          family_user_id?: string | null
           id?: string
           person_name?: string
           raw_description?: string
@@ -178,6 +181,7 @@ export type Database = {
           about: string
           area: string
           availability: string
+          certifications: string[]
           created_at: string
           headline: string
           hourly_rate: number
@@ -186,12 +190,15 @@ export type Database = {
           languages: string[]
           name: string
           skills: string[]
+          specialties: string[]
+          user_id: string | null
           years_experience: number
         }
         Insert: {
           about?: string
           area?: string
           availability?: string
+          certifications?: string[]
           created_at?: string
           headline?: string
           hourly_rate?: number
@@ -200,12 +207,15 @@ export type Database = {
           languages?: string[]
           name: string
           skills?: string[]
+          specialties?: string[]
+          user_id?: string | null
           years_experience?: number
         }
         Update: {
           about?: string
           area?: string
           availability?: string
+          certifications?: string[]
           created_at?: string
           headline?: string
           hourly_rate?: number
@@ -214,6 +224,8 @@ export type Database = {
           languages?: string[]
           name?: string
           skills?: string[]
+          specialties?: string[]
+          user_id?: string | null
           years_experience?: number
         }
         Relationships: []
@@ -250,27 +262,66 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          location: string
+          phone: string
+          relationship: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id: string
+          location?: string
+          phone?: string
+          relationship?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          location?: string
+          phone?: string
+          relationship?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       task_logs: {
         Row: {
+          completed_at: string | null
           id: string
           log_date: string
           note: string
+          postponed_to: string
           status: string
           task_id: string
           updated_at: string
         }
         Insert: {
+          completed_at?: string | null
           id?: string
           log_date?: string
           note?: string
+          postponed_to?: string
           status?: string
           task_id: string
           updated_at?: string
         }
         Update: {
+          completed_at?: string | null
           id?: string
           log_date?: string
           note?: string
+          postponed_to?: string
           status?: string
           task_id?: string
           updated_at?: string
@@ -290,10 +341,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_access_request: { Args: { _request_id: string }; Returns: boolean }
+      my_caregiver_id: { Args: never; Returns: string }
+      owns_request: { Args: { _request_id: string }; Returns: boolean }
+      plan_request: { Args: { _plan_id: string }; Returns: string }
+      task_request: { Args: { _task_id: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "family" | "caregiver"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -420,6 +475,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["family", "caregiver"],
+    },
   },
 } as const

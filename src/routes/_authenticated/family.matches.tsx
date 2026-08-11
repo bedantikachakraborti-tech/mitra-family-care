@@ -11,7 +11,7 @@ import { rankCaregivers } from "@/lib/ai.functions";
 import { ensurePlan, matchesQuery, saveMatches, selectCaregiver } from "@/lib/care-data";
 import { useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/family/matches")({
+export const Route = createFileRoute("/_authenticated/family/matches")({
   head: () => ({
     meta: [
       { title: "Suggested caregivers — Mitra" },

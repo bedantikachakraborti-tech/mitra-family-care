@@ -13,7 +13,7 @@ import { askAssistant, generateDaySummary, suggestPlanAdjustments } from "@/lib/
 import { recentLogsQuery, saveDaySummary, updateTask } from "@/lib/care-data";
 import { buildAssistantContext, logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/assistant")({
+export const Route = createFileRoute("/_authenticated/assistant")({
   head: () => ({
     meta: [
       { title: "Assistant — Mitra" },

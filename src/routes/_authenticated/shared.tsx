@@ -6,10 +6,10 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
 import { summaryQuery } from "@/lib/care-data";
-import { DAY_LABELS, type DayKey } from "@/lib/care-types";
+import { DAY_LABELS, statusLabel, type DayKey } from "@/lib/care-types";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/shared")({
+export const Route = createFileRoute("/_authenticated/shared")({
   head: () => ({
     meta: [
       { title: "Care circle — Mitra" },
@@ -93,7 +93,8 @@ function SharedDashboard() {
         ) : (
           <ul className="space-y-2">
             {today.map((task) => {
-              const status = logFor(logs, task.id)?.status ?? "pending";
+              const log = logFor(logs, task.id);
+              const status = log?.status ?? "pending";
               return (
                 <li
                   key={task.id}
@@ -109,12 +110,7 @@ function SharedDashboard() {
                   <span className="min-w-0">
                     <span className="block truncate font-medium">{task.title}</span>
                     <span className="block text-sm text-muted-foreground">
-                      {task.scheduled_time || task.time_of_day} ·{" "}
-                      {status === "done"
-                        ? "marked complete"
-                        : status === "postponed"
-                          ? "postponed"
-                          : "hasn't been marked complete yet"}
+                      {task.scheduled_time || task.time_of_day} · {statusLabel(log)}
                     </span>
                   </span>
                   <Pill tone={status === "done" ? "sage" : "muted"}>{task.category}</Pill>

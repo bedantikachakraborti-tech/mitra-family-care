@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
 import { setTaskLog } from "@/lib/care-data";
-import type { CareTask, TaskLog, TaskStatus } from "@/lib/care-types";
+import { statusLabel, type CareTask, type TaskLog, type TaskStatus } from "@/lib/care-types";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/caregiver/")({
+export const Route = createFileRoute("/_authenticated/caregiver/")({
   head: () => ({
     meta: [
       { title: "Today's Care — Mitra" },
@@ -36,8 +36,12 @@ function CaregiverDashboard() {
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
 
   const save = useMutation({
-    mutationFn: (input: { taskId: string; status: TaskStatus; note: string }) =>
-      setTaskLog({ ...input, date }),
+    mutationFn: (input: {
+      taskId: string;
+      status: TaskStatus;
+      note: string;
+      postponedTo?: string | undefined;
+    }) => setTaskLog({ ...input, date }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task-logs"] }),
     onError: (error: Error) => toast.error(error.message),
   });
@@ -107,7 +111,9 @@ function CaregiverDashboard() {
                 task={task}
                 log={logFor(logs, task.id)}
                 saving={save.isPending}
-                onSave={(status, note) => save.mutate({ taskId: task.id, status, note })}
+                onSave={(status, note, postponedTo) =>
+                  save.mutate({ taskId: task.id, status, note, postponedTo })
+                }
               />
             ))}
           </ul>
@@ -139,9 +145,11 @@ function TaskRow({
   task: CareTask;
   log: TaskLog | undefined;
   saving: boolean;
-  onSave: (status: TaskStatus, note: string) => void;
+  onSave: (status: TaskStatus, note: string, postponedTo?: string) => void;
 }) {
   const [openNote, setOpenNote] = useState(false);
+  const [openPostpone, setOpenPostpone] = useState(false);
+  const [newTime, setNewTime] = useState(log?.postponed_to || task.scheduled_time || "");
   const [note, setNote] = useState(log?.note ?? "");
   const status = log?.status ?? "pending";
 
@@ -173,11 +181,7 @@ function TaskRow({
             <p className="mt-0.5 text-sm text-muted-foreground">{task.details}</p>
           )}
           <p className="mt-2 text-xs text-muted-foreground">
-            {status === "done"
-              ? "Marked complete"
-              : status === "postponed"
-                ? "Postponed for now"
-                : "This task hasn't been marked complete yet"}
+            {statusLabel(log)}
           </p>
           {log?.note && !openNote && (
             <p className="mt-2 rounded-2xl bg-secondary px-3 py-2 text-sm">{log.note}</p>
@@ -200,7 +204,7 @@ function TaskRow({
           variant={status === "postponed" ? "default" : "outline"}
           className="h-11 rounded-full"
           disabled={saving}
-          onClick={() => onSave("postponed", note)}
+          onClick={() => setOpenPostpone((v) => !v)}
         >
           Postpone
         </Button>
@@ -215,6 +219,34 @@ function TaskRow({
         </Button>
         {task.category && <Pill tone="sky">{task.category}</Pill>}
       </div>
+
+      {openPostpone && (
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <div>
+            <label htmlFor={`time-${task.id}`} className="text-xs font-semibold">
+              New time
+            </label>
+            <input
+              id={`time-${task.id}`}
+              type="time"
+              value={newTime}
+              onChange={(event) => setNewTime(event.target.value)}
+              className="mt-1 block h-11 rounded-2xl border border-border bg-card px-3 text-sm"
+            />
+          </div>
+          <Button
+            size="lg"
+            className="h-11 rounded-full px-5"
+            disabled={saving}
+            onClick={() => {
+              onSave("postponed", note, newTime);
+              setOpenPostpone(false);
+            }}
+          >
+            Save new time
+          </Button>
+        </div>
+      )}
 
       {openNote && (
         <div className="mt-3">
