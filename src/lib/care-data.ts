@@ -251,7 +251,7 @@ export async function setTaskLog(input: {
   date: string;
   status: TaskStatus;
   note: string;
-  postponedTo?: string;
+  postponedTo?: string | undefined;
 }) {
   unwrap(
     await supabase
