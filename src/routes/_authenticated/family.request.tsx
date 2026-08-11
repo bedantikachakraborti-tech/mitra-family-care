@@ -16,7 +16,7 @@ import { saveCareRequest } from "@/lib/care-data";
 import { emptyRequirements, type CareRequirements } from "@/lib/care-types";
 import { useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/family/request")({
+export const Route = createFileRoute("/_authenticated/family/request")({
   head: () => ({
     meta: [
       { title: "Describe the care you need — Mitra" },

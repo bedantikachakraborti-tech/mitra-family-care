@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Pill, SoftCard, SectionTitle } from "@/components/ui-kit";
 import { caregiver } from "@/lib/demo-data";
 
-export const Route = createFileRoute("/caregiver/profile")({
+export const Route = createFileRoute("/_authenticated/caregiver/profile")({
   head: () => ({
     meta: [
       { title: "My profile — Mitra" },

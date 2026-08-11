@@ -4,7 +4,7 @@ import { Field, OnboardingLayout } from "@/components/onboarding";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-export const Route = createFileRoute("/onboarding/caregiver")({
+export const Route = createFileRoute("/_authenticated/onboarding/caregiver")({
   head: () => ({
     meta: [
       { title: "Caregiver onboarding — Mitra" },

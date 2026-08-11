@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
 import { careRecipient, todaysTasks, updates } from "@/lib/demo-data";
 
-export const Route = createFileRoute("/family/")({
+export const Route = createFileRoute("/_authenticated/family/")({
   head: () => ({
     meta: [
       { title: "Family home — Mitra" },

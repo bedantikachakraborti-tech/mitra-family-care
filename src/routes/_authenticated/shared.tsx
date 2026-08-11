@@ -9,7 +9,7 @@ import { summaryQuery } from "@/lib/care-data";
 import { DAY_LABELS, type DayKey } from "@/lib/care-types";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/shared")({
+export const Route = createFileRoute("/_authenticated/shared")({
   head: () => ({
     meta: [
       { title: "Care circle — Mitra" },

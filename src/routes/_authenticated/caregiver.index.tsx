@@ -12,7 +12,7 @@ import { setTaskLog } from "@/lib/care-data";
 import type { CareTask, TaskLog, TaskStatus } from "@/lib/care-types";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
-export const Route = createFileRoute("/caregiver/")({
+export const Route = createFileRoute("/_authenticated/caregiver/")({
   head: () => ({
     meta: [
       { title: "Today's Care — Mitra" },
