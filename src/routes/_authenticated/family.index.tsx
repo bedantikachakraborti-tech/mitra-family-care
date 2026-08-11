@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarHeart, MessageCircleHeart } from "lucide-react";
+
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
-import { careRecipient, todaysTasks, updates } from "@/lib/demo-data";
+import { useMyProfile } from "@/lib/auth";
+import { statusLabel } from "@/lib/care-types";
+import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
 export const Route = createFileRoute("/_authenticated/family/")({
   head: () => ({
@@ -11,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/family/")({
       { title: "Family home — Mitra" },
       {
         name: "description",
-        content: "See how Amma's day is going, who's with her, and what's coming next.",
+        content: "See how today's care is going, who's helping, and what's coming next.",
       },
       { property: "og:title", content: "Family home — Mitra" },
       { property: "og:description", content: "A warm daily picture of how care is going." },
@@ -21,13 +24,21 @@ export const Route = createFileRoute("/_authenticated/family/")({
 });
 
 function FamilyDashboard() {
-  const next = todaysTasks.find((t) => !t.done);
+  const profile = useMyProfile();
+  const { request, caregiver, tasks, logs, isLoading } = useCareContext();
+  const today = tasksForDay(tasks);
+  const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
+  const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
+  const notes = today
+    .map((t) => ({ task: t, log: logFor(logs, t.id) }))
+    .filter((row) => row.log?.note);
+  const firstName = request?.person_name?.split(" ")[0] ?? "your family";
 
   return (
     <AppShell
       role="family"
-      title="Hello, Anita"
-      subtitle={`How ${careRecipient.name.split(" ")[0]}'s day is going`}
+      title={`Hello${profile.data?.full_name ? `, ${profile.data.full_name.split(" ")[0]}` : ""}`}
+      subtitle={request ? `How ${firstName}'s day is going` : "Let's set up care together"}
       action={
         <Button asChild size="lg" className="h-12 rounded-full px-6">
           <Link to="/family/request">New care request</Link>
@@ -39,20 +50,41 @@ function FamilyDashboard() {
           <div className="min-w-0">
             <p className="text-sm font-medium opacity-80">Right now</p>
             <p className="mt-1 font-display text-2xl font-semibold">
-              Priya is with Amma · next: {next?.title ?? "resting"}
+              {caregiver ? `${caregiver.name} is your caregiver` : "No caregiver selected yet"}
+              {next ? ` · next: ${next.title}` : ""}
             </p>
-            <p className="mt-1 text-sm opacity-90">Scheduled for {next?.time ?? "—"}</p>
+            <p className="mt-1 text-sm opacity-90">
+              {next
+                ? `Scheduled for ${next.scheduled_time || next.time_of_day}`
+                : isLoading
+                  ? "Loading today's plan…"
+                  : "Nothing else scheduled for today."}
+            </p>
           </div>
           <Button asChild variant="secondary" size="lg" className="h-12 rounded-full px-6">
-            <Link to="/shared">Open care circle</Link>
+            <Link to={caregiver ? "/shared" : "/family/matches"}>
+              {caregiver ? "Open care circle" : "See matches"}
+            </Link>
           </Button>
         </div>
       </SoftCard>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <StatTile label="This week" value="5 visits" hint="Mon – Fri, 8:00–18:00" />
-        <StatTile label="Medication" value="On time" hint="14 of 14 doses" />
-        <StatTile label="Mood" value="Bright" hint="Priya's last 3 notes" />
+        <StatTile
+          label="Today"
+          value={`${done} of ${today.length} done`}
+          hint="Updated by your caregiver"
+        />
+        <StatTile
+          label="Care plan"
+          value={`${tasks.length} routines`}
+          hint={tasks.length ? "Shared with your caregiver" : "Not created yet"}
+        />
+        <StatTile
+          label="Caregiver"
+          value={caregiver?.name.split(" ")[0] ?? "—"}
+          hint={caregiver?.area || "Choose from your matches"}
+        />
       </div>
 
       <SoftCard>
@@ -63,21 +95,53 @@ function FamilyDashboard() {
             </Link>
           }
         >
-          Latest updates
+          Today's tasks
         </SectionTitle>
-        <ul className="space-y-3">
-          {updates.slice(0, 2).map((u) => (
-            <li key={u.id} className="rounded-2xl border border-border p-4">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-                <p className="min-w-0 text-sm font-semibold">{u.author}</p>
-                <Pill tone="honey">{u.mood}</Pill>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">{u.text}</p>
-              <p className="mt-2 text-xs text-muted-foreground">{u.time}</p>
-            </li>
-          ))}
-        </ul>
+        {today.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No tasks scheduled today.{" "}
+            <Link to="/care-plan" className="text-primary">
+              Build the care plan
+            </Link>
+            .
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {today.map((task) => {
+              const log = logFor(logs, task.id);
+              const status = log?.status ?? "pending";
+              return (
+                <li key={task.id} className="rounded-2xl border border-border p-4">
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                    <p className="min-w-0 text-sm font-semibold">{task.title}</p>
+                    <Pill tone={status === "done" ? "sage" : status === "postponed" ? "honey" : "sky"}>
+                      {status === "done" ? "Complete" : status === "postponed" ? "Postponed" : "Open"}
+                    </Pill>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {task.scheduled_time || task.time_of_day} · {statusLabel(log)}
+                  </p>
+                  {log?.note && <p className="mt-2 text-sm">“{log.note}”</p>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </SoftCard>
+
+      {notes.length > 0 && (
+        <SoftCard>
+          <SectionTitle>Caregiver notes today</SectionTitle>
+          <ul className="space-y-3">
+            {notes.map(({ task, log }) => (
+              <li key={task.id} className="rounded-2xl border border-border p-4">
+                <p className="text-sm font-semibold">{task.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{log?.note}</p>
+              </li>
+            ))}
+          </ul>
+        </SoftCard>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <QuickLink
@@ -90,7 +154,7 @@ function FamilyDashboard() {
           to="/family/matches"
           icon={MessageCircleHeart}
           title="Caregiver matches"
-          text="3 caregivers suggested for weekends."
+          text="Review the caregivers Mitra suggested."
         />
       </div>
     </AppShell>
