@@ -20,6 +20,7 @@ import { Route as AuthenticatedCaregiverIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedCaregiverProfileRouteImport } from './routes/_authenticated/caregiver.profile'
 import { Route as AuthenticatedFamilyIndexRouteImport } from './routes/_authenticated/family.index'
 import { Route as AuthenticatedFamilyMatchesRouteImport } from './routes/_authenticated/family.matches'
+import { Route as AuthenticatedFamilyProfileRouteImport } from './routes/_authenticated/family.profile'
 import { Route as AuthenticatedFamilyRequestRouteImport } from './routes/_authenticated/family.request'
 import { Route as AuthenticatedOnboardingCaregiverRouteImport } from './routes/_authenticated/onboarding.caregiver'
 import { Route as AuthenticatedOnboardingFamilyRouteImport } from './routes/_authenticated/onboarding.family'
@@ -82,6 +83,12 @@ const AuthenticatedFamilyMatchesRoute =
     path: '/family/matches',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFamilyProfileRoute =
+  AuthenticatedFamilyProfileRouteImport.update({
+    id: '/family/profile',
+    path: '/family/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFamilyRequestRoute =
   AuthenticatedFamilyRequestRouteImport.update({
     id: '/family/request',
@@ -110,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/shared': typeof AuthenticatedSharedRoute
   '/caregiver/profile': typeof AuthenticatedCaregiverProfileRoute
   '/family/matches': typeof AuthenticatedFamilyMatchesRoute
+  '/family/profile': typeof AuthenticatedFamilyProfileRoute
   '/family/request': typeof AuthenticatedFamilyRequestRoute
   '/onboarding/caregiver': typeof AuthenticatedOnboardingCaregiverRoute
   '/onboarding/family': typeof AuthenticatedOnboardingFamilyRoute
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/shared': typeof AuthenticatedSharedRoute
   '/caregiver/profile': typeof AuthenticatedCaregiverProfileRoute
   '/family/matches': typeof AuthenticatedFamilyMatchesRoute
+  '/family/profile': typeof AuthenticatedFamilyProfileRoute
   '/family/request': typeof AuthenticatedFamilyRequestRoute
   '/onboarding/caregiver': typeof AuthenticatedOnboardingCaregiverRoute
   '/onboarding/family': typeof AuthenticatedOnboardingFamilyRoute
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated/shared': typeof AuthenticatedSharedRoute
   '/_authenticated/caregiver/profile': typeof AuthenticatedCaregiverProfileRoute
   '/_authenticated/family/matches': typeof AuthenticatedFamilyMatchesRoute
+  '/_authenticated/family/profile': typeof AuthenticatedFamilyProfileRoute
   '/_authenticated/family/request': typeof AuthenticatedFamilyRequestRoute
   '/_authenticated/onboarding/caregiver': typeof AuthenticatedOnboardingCaregiverRoute
   '/_authenticated/onboarding/family': typeof AuthenticatedOnboardingFamilyRoute
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/shared'
     | '/caregiver/profile'
     | '/family/matches'
+    | '/family/profile'
     | '/family/request'
     | '/onboarding/caregiver'
     | '/onboarding/family'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/shared'
     | '/caregiver/profile'
     | '/family/matches'
+    | '/family/profile'
     | '/family/request'
     | '/onboarding/caregiver'
     | '/onboarding/family'
@@ -190,6 +202,7 @@ export interface FileRouteTypes {
     | '/_authenticated/shared'
     | '/_authenticated/caregiver/profile'
     | '/_authenticated/family/matches'
+    | '/_authenticated/family/profile'
     | '/_authenticated/family/request'
     | '/_authenticated/onboarding/caregiver'
     | '/_authenticated/onboarding/family'
@@ -283,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFamilyMatchesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/family/profile': {
+      id: '/_authenticated/family/profile'
+      path: '/family/profile'
+      fullPath: '/family/profile'
+      preLoaderRoute: typeof AuthenticatedFamilyProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/family/request': {
       id: '/_authenticated/family/request'
       path: '/family/request'
@@ -313,6 +333,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSharedRoute: typeof AuthenticatedSharedRoute
   AuthenticatedCaregiverProfileRoute: typeof AuthenticatedCaregiverProfileRoute
   AuthenticatedFamilyMatchesRoute: typeof AuthenticatedFamilyMatchesRoute
+  AuthenticatedFamilyProfileRoute: typeof AuthenticatedFamilyProfileRoute
   AuthenticatedFamilyRequestRoute: typeof AuthenticatedFamilyRequestRoute
   AuthenticatedOnboardingCaregiverRoute: typeof AuthenticatedOnboardingCaregiverRoute
   AuthenticatedOnboardingFamilyRoute: typeof AuthenticatedOnboardingFamilyRoute
@@ -326,6 +347,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSharedRoute: AuthenticatedSharedRoute,
   AuthenticatedCaregiverProfileRoute: AuthenticatedCaregiverProfileRoute,
   AuthenticatedFamilyMatchesRoute: AuthenticatedFamilyMatchesRoute,
+  AuthenticatedFamilyProfileRoute: AuthenticatedFamilyProfileRoute,
   AuthenticatedFamilyRequestRoute: AuthenticatedFamilyRequestRoute,
   AuthenticatedOnboardingCaregiverRoute: AuthenticatedOnboardingCaregiverRoute,
   AuthenticatedOnboardingFamilyRoute: AuthenticatedOnboardingFamilyRoute,

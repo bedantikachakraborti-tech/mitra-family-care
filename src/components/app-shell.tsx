@@ -10,6 +10,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { LogOut } from "lucide-react";
+import { initialsOf } from "@/lib/caregiver-profile";
+import { useMyProfile, useSignOut } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { MitraMark } from "./mitra-mark";
 
@@ -34,6 +37,7 @@ const familyNav: NavItem[] = [
 const familyExtras: NavItem[] = [
   { to: "/family/request", label: "Care request", icon: ClipboardList },
   { to: "/family/matches", label: "Matches", icon: MessageCircleHeart },
+  { to: "/family/profile", label: "My profile", icon: UserRound },
 ];
 
 export function AppShell({
@@ -52,6 +56,10 @@ export function AppShell({
   const nav = role === "caregiver" ? caregiverNav : familyNav;
   const extras = role === "family" ? familyExtras : [];
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const profile = useMyProfile();
+  const signOut = useSignOut();
+  const profileTo = role === "caregiver" ? "/caregiver/profile" : "/family/profile";
+  const initials = initialsOf(profile.data?.full_name ?? "") || "MI";
 
   return (
     <div className="min-h-screen bg-background lg:flex">
@@ -72,11 +80,21 @@ export function AppShell({
         />
         {extras.length > 0 && <SideGroup label="Find care" items={extras} pathname={pathname} />}
 
-        <div className="mt-auto rounded-2xl bg-sage p-4 text-sage-foreground">
-          <p className="text-sm font-semibold">Need a hand?</p>
-          <p className="mt-1 text-xs opacity-90">
-            Mitra support answers within a few hours, every day of the week.
-          </p>
+        <div className="mt-auto space-y-3">
+          <div className="rounded-2xl bg-sage p-4 text-sage-foreground">
+            <p className="text-sm font-semibold">Need a hand?</p>
+            <p className="mt-1 text-xs opacity-90">
+              Mitra support answers within a few hours, every day of the week.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-sidebar-accent"
+          >
+            <LogOut className="h-4.5 w-4.5 shrink-0" aria-hidden />
+            Sign out
+          </button>
         </div>
       </aside>
 
@@ -88,13 +106,23 @@ export function AppShell({
               <MitraMark className="h-8 w-8 shrink-0" />
               <span className="truncate font-display text-lg font-semibold">Mitra</span>
             </Link>
-            <Link
-              to={role === "caregiver" ? "/caregiver/profile" : "/shared"}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground"
-              aria-label="Open profile"
-            >
-              {role === "caregiver" ? "PN" : "AR"}
-            </Link>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                to={profileTo}
+                className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground"
+                aria-label="Open profile"
+              >
+                {initials}
+              </Link>
+              <button
+                type="button"
+                onClick={() => void signOut()}
+                className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-secondary-foreground"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
           </div>
         </header>
 
