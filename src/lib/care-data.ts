@@ -251,6 +251,7 @@ export async function setTaskLog(input: {
   date: string;
   status: TaskStatus;
   note: string;
+  postponedTo?: string;
 }) {
   unwrap(
     await supabase
@@ -261,6 +262,9 @@ export async function setTaskLog(input: {
           log_date: input.date,
           status: input.status,
           note: input.note,
+          // One canonical status record per task per day.
+          completed_at: input.status === "done" ? new Date().toISOString() : null,
+          postponed_to: input.status === "postponed" ? (input.postponedTo ?? "") : "",
           updated_at: new Date().toISOString(),
         },
         { onConflict: "task_id,log_date" },
@@ -269,6 +273,7 @@ export async function setTaskLog(input: {
       .single(),
   );
 }
+
 
 export async function saveDaySummary(planId: string, date: string, content: string) {
   unwrap(
