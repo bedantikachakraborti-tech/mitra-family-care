@@ -282,3 +282,52 @@ ${data.context || "No care plan has been set up yet."}`,
       return toMessage(error);
     }
   });
+
+/** Turn a caregiver's spoken or typed introduction into a structured profile draft. */
+export const structureCaregiverProfile = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ description: z.string().trim().min(10).max(4000) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    try {
+      const result = await callAiJson<Record<string, unknown>>({
+        system: `Convert a caregiver's own description of their work into a structured profile draft.
+Return JSON with exactly these keys:
+{
+  "name": string,             // their name if they said it, else ""
+  "headline": string,         // one short line, e.g. "Elder companion and mobility support"
+  "about": string,            // 2-3 warm sentences in first person, using only what they said
+  "yearsExperience": number,  // 0 if not stated
+  "languages": string[],
+  "skills": string[],
+  "specialties": string[],    // kinds of care they focus on
+  "certifications": string[], // only certifications they explicitly mentioned
+  "area": string,             // neighbourhood / city if stated, else ""
+  "availability": string,     // e.g. "Weekday mornings" if stated, else ""
+  "hourlyRate": number        // 0 if not stated
+}
+The caregiver may speak in any language; write the profile in the same language they used.
+Only include facts they actually said. Never invent experience, certifications or rates.
+Never comment on trustworthiness, safety or character.`,
+        user: data.description,
+      });
+
+      return z
+        .object({
+          name: z.string().default(""),
+          headline: z.string().default(""),
+          about: z.string().default(""),
+          yearsExperience: z.coerce.number().default(0),
+          languages: stringArray,
+          skills: stringArray,
+          specialties: stringArray,
+          certifications: stringArray,
+          area: z.string().default(""),
+          availability: z.string().default(""),
+          hourlyRate: z.coerce.number().default(0),
+        })
+        .parse(result);
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
