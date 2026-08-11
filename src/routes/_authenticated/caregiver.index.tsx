@@ -40,7 +40,7 @@ function CaregiverDashboard() {
       taskId: string;
       status: TaskStatus;
       note: string;
-      postponedTo?: string;
+      postponedTo?: string | undefined;
     }) => setTaskLog({ ...input, date }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task-logs"] }),
     onError: (error: Error) => toast.error(error.message),
