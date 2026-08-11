@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as RoleRouteImport } from './routes/role'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedCarePlanRouteImport } from './routes/_authenticated/care-plan'
@@ -27,67 +28,71 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoleRoute = RoleRouteImport.update({
   id: '/role',
   path: '/role',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
-  id: '/_authenticated/assistant',
+  id: '/assistant',
   path: '/assistant',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCarePlanRoute = AuthenticatedCarePlanRouteImport.update({
-  id: '/_authenticated/care-plan',
+  id: '/care-plan',
   path: '/care-plan',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSharedRoute = AuthenticatedSharedRouteImport.update({
-  id: '/_authenticated/shared',
+  id: '/shared',
   path: '/shared',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCaregiverIndexRoute =
   AuthenticatedCaregiverIndexRouteImport.update({
-    id: '/_authenticated/caregiver/',
+    id: '/caregiver/',
     path: '/caregiver/',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCaregiverProfileRoute =
   AuthenticatedCaregiverProfileRouteImport.update({
-    id: '/_authenticated/caregiver/profile',
+    id: '/caregiver/profile',
     path: '/caregiver/profile',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFamilyIndexRoute =
   AuthenticatedFamilyIndexRouteImport.update({
-    id: '/_authenticated/family/',
+    id: '/family/',
     path: '/family/',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFamilyMatchesRoute =
   AuthenticatedFamilyMatchesRouteImport.update({
-    id: '/_authenticated/family/matches',
+    id: '/family/matches',
     path: '/family/matches',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFamilyRequestRoute =
   AuthenticatedFamilyRequestRouteImport.update({
-    id: '/_authenticated/family/request',
+    id: '/family/request',
     path: '/family/request',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedOnboardingCaregiverRoute =
   AuthenticatedOnboardingCaregiverRouteImport.update({
-    id: '/_authenticated/onboarding/caregiver',
+    id: '/onboarding/caregiver',
     path: '/onboarding/caregiver',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedOnboardingFamilyRoute =
   AuthenticatedOnboardingFamilyRouteImport.update({
-    id: '/_authenticated/onboarding/family',
+    id: '/onboarding/family',
     path: '/onboarding/family',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -121,6 +126,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/role': typeof RoleRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/care-plan': typeof AuthenticatedCarePlanRoute
@@ -165,6 +171,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/role'
     | '/_authenticated/assistant'
     | '/_authenticated/care-plan'
@@ -180,17 +187,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   RoleRoute: typeof RoleRoute
-  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
-  AuthenticatedCarePlanRoute: typeof AuthenticatedCarePlanRoute
-  AuthenticatedSharedRoute: typeof AuthenticatedSharedRoute
-  AuthenticatedCaregiverProfileRoute: typeof AuthenticatedCaregiverProfileRoute
-  AuthenticatedFamilyMatchesRoute: typeof AuthenticatedFamilyMatchesRoute
-  AuthenticatedFamilyRequestRoute: typeof AuthenticatedFamilyRequestRoute
-  AuthenticatedOnboardingCaregiverRoute: typeof AuthenticatedOnboardingCaregiverRoute
-  AuthenticatedOnboardingFamilyRoute: typeof AuthenticatedOnboardingFamilyRoute
-  AuthenticatedCaregiverIndexRoute: typeof AuthenticatedCaregiverIndexRoute
-  AuthenticatedFamilyIndexRoute: typeof AuthenticatedFamilyIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -200,6 +198,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/role': {
@@ -214,77 +219,88 @@ declare module '@tanstack/react-router' {
       path: '/assistant'
       fullPath: '/assistant'
       preLoaderRoute: typeof AuthenticatedAssistantRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/care-plan': {
       id: '/_authenticated/care-plan'
       path: '/care-plan'
       fullPath: '/care-plan'
       preLoaderRoute: typeof AuthenticatedCarePlanRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/shared': {
       id: '/_authenticated/shared'
       path: '/shared'
       fullPath: '/shared'
       preLoaderRoute: typeof AuthenticatedSharedRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/caregiver/': {
       id: '/_authenticated/caregiver/'
       path: '/caregiver'
       fullPath: '/caregiver/'
       preLoaderRoute: typeof AuthenticatedCaregiverIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/caregiver/profile': {
       id: '/_authenticated/caregiver/profile'
       path: '/caregiver/profile'
       fullPath: '/caregiver/profile'
       preLoaderRoute: typeof AuthenticatedCaregiverProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/family/': {
       id: '/_authenticated/family/'
       path: '/family'
       fullPath: '/family/'
       preLoaderRoute: typeof AuthenticatedFamilyIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/family/matches': {
       id: '/_authenticated/family/matches'
       path: '/family/matches'
       fullPath: '/family/matches'
       preLoaderRoute: typeof AuthenticatedFamilyMatchesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/family/request': {
       id: '/_authenticated/family/request'
       path: '/family/request'
       fullPath: '/family/request'
       preLoaderRoute: typeof AuthenticatedFamilyRequestRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding/caregiver': {
       id: '/_authenticated/onboarding/caregiver'
       path: '/onboarding/caregiver'
       fullPath: '/onboarding/caregiver'
       preLoaderRoute: typeof AuthenticatedOnboardingCaregiverRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding/family': {
       id: '/_authenticated/onboarding/family'
       path: '/onboarding/family'
       fullPath: '/onboarding/family'
       preLoaderRoute: typeof AuthenticatedOnboardingFamilyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  RoleRoute: RoleRoute,
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
+  AuthenticatedCarePlanRoute: typeof AuthenticatedCarePlanRoute
+  AuthenticatedSharedRoute: typeof AuthenticatedSharedRoute
+  AuthenticatedCaregiverProfileRoute: typeof AuthenticatedCaregiverProfileRoute
+  AuthenticatedFamilyMatchesRoute: typeof AuthenticatedFamilyMatchesRoute
+  AuthenticatedFamilyRequestRoute: typeof AuthenticatedFamilyRequestRoute
+  AuthenticatedOnboardingCaregiverRoute: typeof AuthenticatedOnboardingCaregiverRoute
+  AuthenticatedOnboardingFamilyRoute: typeof AuthenticatedOnboardingFamilyRoute
+  AuthenticatedCaregiverIndexRoute: typeof AuthenticatedCaregiverIndexRoute
+  AuthenticatedFamilyIndexRoute: typeof AuthenticatedFamilyIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedCarePlanRoute: AuthenticatedCarePlanRoute,
   AuthenticatedSharedRoute: AuthenticatedSharedRoute,
@@ -295,6 +311,15 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedOnboardingFamilyRoute: AuthenticatedOnboardingFamilyRoute,
   AuthenticatedCaregiverIndexRoute: AuthenticatedCaregiverIndexRoute,
   AuthenticatedFamilyIndexRoute: AuthenticatedFamilyIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  RoleRoute: RoleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
