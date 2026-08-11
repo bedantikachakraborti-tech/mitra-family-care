@@ -152,6 +152,8 @@ export async function saveCareRequest(input: {
   rawDescription: string;
   structured: CareRequirements;
 }): Promise<CareRequest> {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) throw new Error("You need to be signed in.");
   const row = unwrap(
     await supabase
       .from("care_requests")
@@ -160,12 +162,14 @@ export async function saveCareRequest(input: {
         area: input.structured.area,
         raw_description: input.rawDescription,
         structured: input.structured as unknown as never,
+        family_user_id: auth.user.id,
       })
       .select("*")
       .single(),
   );
   return row as unknown as CareRequest;
 }
+
 
 export async function saveMatches(
   requestId: string,
