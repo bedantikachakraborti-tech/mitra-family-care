@@ -118,6 +118,9 @@ export type Caregiver = {
   area: string;
   availability: string;
   hourly_rate: number;
+  certifications: string[];
+  specialties: string[];
+  user_id?: string | null;
 };
 
 export type CareRequest = {
