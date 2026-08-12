@@ -208,8 +208,9 @@ export const suggestPlanAdjustments = createServerFn({ method: "POST" })
             recent: z.array(z.string()).default([]),
             notes: z.array(z.string()).default([]),
             observations: z.array(z.string()).default([]),
-
+          }),
         ),
+
       })
       .parse(input),
   )
