@@ -218,6 +218,7 @@ export const suggestPlanAdjustments = createServerFn({ method: "POST" })
     try {
       const result = await callAiJson<{ suggestions?: unknown }>({
         system: `Look at how recurring care tasks have gone recently and suggest gentle schedule adjustments.
+Each entry includes "observations": factual counts already computed from the saved records. Base your reasoning only on those.
 
 Return JSON: { "suggestions": [ { "taskId": string, "suggestion": string, "reason": string } ] }
 - Only suggest changes for tasks with a clear repeated pattern. Return an empty list if nothing stands out.
