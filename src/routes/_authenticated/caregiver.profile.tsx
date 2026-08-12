@@ -18,6 +18,7 @@ import {
   saveMyCaregiverProfile,
   type CaregiverProfileInput,
 } from "@/lib/caregiver-profile";
+import { languageName, speechLocale, useLanguage } from "@/lib/i18n";
 import { useSpeechInput } from "@/lib/use-speech-input";
 
 export const Route = createFileRoute("/_authenticated/caregiver/profile")({
@@ -61,7 +62,8 @@ function CaregiverProfilePage() {
   const [form, setForm] = useState<CaregiverProfileInput>(emptyCaregiverProfile);
   const [loaded, setLoaded] = useState(false);
   const [story, setStory] = useState("");
-  const [lang, setLang] = useState("en-IN");
+  const { lang: uiLang } = useLanguage();
+  const [lang, setLang] = useState(speechLocale(uiLang));
   const [draft, setDraft] = useState<CaregiverProfileInput | null>(null);
   const speech = useSpeechInput(lang);
 
@@ -91,7 +93,8 @@ function CaregiverProfilePage() {
   }, [speech.transcript]);
 
   const extract = useMutation({
-    mutationFn: (description: string) => structureCaregiverProfile({ data: { description } }),
+    mutationFn: (description: string) =>
+      structureCaregiverProfile({ data: { description, outputLanguage: languageName(uiLang) } }),
     onSuccess: (result) => {
       setDraft({
         ...form,

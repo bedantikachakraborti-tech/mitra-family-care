@@ -286,7 +286,12 @@ ${data.context || "No care plan has been set up yet."}`,
 /** Turn a caregiver's spoken or typed introduction into a structured profile draft. */
 export const structureCaregiverProfile = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ description: z.string().trim().min(10).max(4000) }).parse(input),
+    z
+      .object({
+        description: z.string().trim().min(10).max(4000),
+        outputLanguage: z.string().default("English"),
+      })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     try {
@@ -306,11 +311,14 @@ Return JSON with exactly these keys:
   "availability": string,     // e.g. "Weekday mornings" if stated, else ""
   "hourlyRate": number        // 0 if not stated
 }
-The caregiver may speak in any language; write the profile in the same language they used.
+The caregiver may speak or type in any language.
+Write every text value in ${data.outputLanguage}, translating faithfully where needed.
+Keep personal names, place names and certification names as they were said; do not transliterate them beyond what is natural.
 Only include facts they actually said. Never invent experience, certifications or rates.
 Never comment on trustworthiness, safety or character.`,
         user: data.description,
       });
+
 
       return z
         .object({

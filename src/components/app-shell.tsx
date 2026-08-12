@@ -11,33 +11,35 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
+import { LanguageSelect } from "@/components/language-select";
 import { initialsOf } from "@/lib/caregiver-profile";
 import { useMyProfile, useSignOut } from "@/lib/auth";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { MitraMark } from "./mitra-mark";
 
 export type ShellRole = "caregiver" | "family";
 
-type NavItem = { to: string; label: string; icon: LucideIcon };
+type NavItem = { to: string; labelKey: string; icon: LucideIcon };
 
 const caregiverNav: NavItem[] = [
-  { to: "/caregiver", label: "Today's Care", icon: Home },
-  { to: "/care-plan", label: "Care Plan", icon: CalendarHeart },
-  { to: "/assistant", label: "Assistant", icon: Sparkles },
-  { to: "/caregiver/profile", label: "Profile", icon: UserRound },
+  { to: "/caregiver", labelKey: "nav.today", icon: Home },
+  { to: "/care-plan", labelKey: "nav.carePlan", icon: CalendarHeart },
+  { to: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
+  { to: "/caregiver/profile", labelKey: "nav.profile", icon: UserRound },
 ];
 
 const familyNav: NavItem[] = [
-  { to: "/family", label: "Home", icon: Home },
-  { to: "/shared", label: "Care Circle", icon: Users },
-  { to: "/care-plan", label: "Care Plan", icon: CalendarHeart },
-  { to: "/assistant", label: "Assistant", icon: Sparkles },
+  { to: "/family", labelKey: "nav.home", icon: Home },
+  { to: "/shared", labelKey: "nav.careCircle", icon: Users },
+  { to: "/care-plan", labelKey: "nav.carePlan", icon: CalendarHeart },
+  { to: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
 ];
 
 const familyExtras: NavItem[] = [
-  { to: "/family/request", label: "Care request", icon: ClipboardList },
-  { to: "/family/matches", label: "Matches", icon: MessageCircleHeart },
-  { to: "/family/profile", label: "My profile", icon: UserRound },
+  { to: "/family/request", labelKey: "nav.careRequest", icon: ClipboardList },
+  { to: "/family/matches", labelKey: "nav.matches", icon: MessageCircleHeart },
+  { to: "/family/profile", labelKey: "nav.myProfile", icon: UserRound },
 ];
 
 export function AppShell({
@@ -53,6 +55,7 @@ export function AppShell({
   action?: ReactNode;
   children: ReactNode;
 }) {
+  const t = useT();
   const nav = role === "caregiver" ? caregiverNav : familyNav;
   const extras = role === "family" ? familyExtras : [];
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -60,6 +63,7 @@ export function AppShell({
   const signOut = useSignOut();
   const profileTo = role === "caregiver" ? "/caregiver/profile" : "/family/profile";
   const initials = initialsOf(profile.data?.full_name ?? "") || "MI";
+
 
   return (
     <div className="min-h-screen bg-background lg:flex">
@@ -69,33 +73,37 @@ export function AppShell({
           <MitraMark className="h-9 w-9" />
           <div className="min-w-0">
             <p className="font-display text-lg leading-none font-semibold">Mitra</p>
-            <p className="mt-1 truncate text-xs text-muted-foreground">Care is better together.</p>
+            <p className="mt-1 truncate text-xs text-muted-foreground">{t("brand.tagline")}</p>
           </div>
         </Link>
 
         <SideGroup
-          label={role === "caregiver" ? "Caregiver" : "Family"}
+          label={role === "caregiver" ? t("nav.groupCaregiver") : t("nav.groupFamily")}
           items={nav}
           pathname={pathname}
+          t={t}
         />
-        {extras.length > 0 && <SideGroup label="Find care" items={extras} pathname={pathname} />}
+        {extras.length > 0 && (
+          <SideGroup
+            label={t("nav.groupFindCare")}
+            items={extras}
+            pathname={pathname}
+            t={t}
+          />
+        )}
 
         <div className="mt-auto space-y-3">
-          <div className="rounded-2xl bg-sage p-4 text-sage-foreground">
-            <p className="text-sm font-semibold">Need a hand?</p>
-            <p className="mt-1 text-xs opacity-90">
-              Mitra support answers within a few hours, every day of the week.
-            </p>
-          </div>
+          <LanguageSelect className="w-full justify-start" />
           <button
             type="button"
             onClick={() => void signOut()}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-sidebar-accent"
           >
             <LogOut className="h-4.5 w-4.5 shrink-0" aria-hidden />
-            Sign out
+            {t("action.signOut")}
           </button>
         </div>
+
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -157,7 +165,8 @@ export function AppShell({
                     )}
                   >
                     <item.icon className={cn("h-5 w-5", active && "text-primary")} aria-hidden />
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate">{t(item.labelKey)}</span>
+
                   </Link>
                 </li>
               );
@@ -173,11 +182,14 @@ function SideGroup({
   label,
   items,
   pathname,
+  t,
 }: {
   label: string;
   items: NavItem[];
   pathname: string;
+  t: (key: string) => string;
 }) {
+
   return (
     <div className="mb-6">
       <p className="px-3 pb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
@@ -198,7 +210,7 @@ function SideGroup({
                 )}
               >
                 <item.icon className="h-4.5 w-4.5 shrink-0" aria-hidden />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{t(item.labelKey)}</span>
               </Link>
             </li>
           );
