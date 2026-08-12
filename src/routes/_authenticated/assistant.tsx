@@ -9,7 +9,9 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SoftCard, SectionTitle } from "@/components/ui-kit";
+import { buildTaskEvidence, hasEnoughHistory, MIN_DAYS_FOR_PATTERN } from "@/lib/adaptive";
 import { askAssistant, generateDaySummary, suggestPlanAdjustments } from "@/lib/ai.functions";
+
 import { recentLogsQuery, saveDaySummary, updateTask } from "@/lib/care-data";
 import { buildAssistantContext, logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
