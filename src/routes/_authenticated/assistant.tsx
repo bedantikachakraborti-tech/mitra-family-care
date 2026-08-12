@@ -9,7 +9,9 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SoftCard, SectionTitle } from "@/components/ui-kit";
+import { buildTaskEvidence, hasEnoughHistory, MIN_DAYS_FOR_PATTERN } from "@/lib/adaptive";
 import { askAssistant, generateDaySummary, suggestPlanAdjustments } from "@/lib/ai.functions";
+
 import { recentLogsQuery, saveDaySummary, updateTask } from "@/lib/care-data";
 import { buildAssistantContext, logFor, tasksForDay, useCareContext } from "@/lib/use-care";
 
@@ -114,21 +116,30 @@ function Assistant() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const evidence = buildTaskEvidence(tasks, recent.data ?? []);
+
   const askAdjustments = useMutation({
     mutationFn: async () => {
-      const logRows = recent.data ?? [];
-      const entries = tasks.map((task) => {
-        const rows = logRows.filter((l) => l.task_id === task.id);
-        return {
-          taskId: task.id,
-          title: task.title,
-          time: task.scheduled_time || task.time_of_day,
-          recent: rows.map((r) => `${r.log_date}: ${r.status}`),
-          notes: rows.filter((r) => r.note).map((r) => r.note),
-        };
+      if (evidence.length === 0) throw new Error("There's no care plan to look at yet.");
+      if (!hasEnoughHistory(evidence)) {
+        throw new Error(
+          `Mitra needs at least ${MIN_DAYS_FOR_PATTERN} days of task records before it can spot a pattern.`,
+        );
+      }
+      const patterned = evidence.filter((e) => e.hasPattern);
+      if (patterned.length === 0) return [];
+      return suggestChanges({
+        data: {
+          entries: patterned.map((e) => ({
+            taskId: e.taskId,
+            title: e.title,
+            time: e.time,
+            recent: e.recent,
+            notes: e.notes,
+            observations: e.observations,
+          })),
+        },
       });
-      if (entries.length === 0) throw new Error("There's no care plan to look at yet.");
-      return suggestChanges({ data: { entries } });
     },
     onSuccess: (result) => {
       setProposals(result);
@@ -136,6 +147,7 @@ function Assistant() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
+
 
   const applyChange = useMutation({
     mutationFn: async ({ taskId, time }: { taskId: string; time: string }) =>

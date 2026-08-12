@@ -93,17 +93,34 @@ export function clockTime(value: string | null | undefined): string {
 }
 
 /** One neutral sentence describing where a task stands right now. */
-export function statusLabel(log: TaskLog | undefined): string {
+export function statusLabel(
+  log: TaskLog | undefined,
+  t?: (key: string, vars?: Record<string, string>) => string,
+): string {
+  const translate =
+    t ??
+    ((key: string, vars?: Record<string, string>) => {
+      const fallback: Record<string, string> = {
+        "status.doneAt": `Completed at ${vars?.["time"] ?? ""}`,
+        "status.done": "Marked complete",
+        "status.postponedAt": `Postponed — new time ${vars?.["time"] ?? ""}`,
+        "status.postponed": "Postponed for now",
+        "status.pending": "This task hasn't been marked complete yet.",
+      };
+      return fallback[key] ?? key;
+    });
+
   if (log?.status === "done") {
     const at = clockTime(log.completed_at);
-    return at ? `Completed at ${at}` : "Marked complete";
+    return at ? translate("status.doneAt", { time: at }) : translate("status.done");
   }
   if (log?.status === "postponed") {
     const at = clockTime(log.postponed_to);
-    return at ? `Postponed — new time ${at}` : "Postponed for now";
+    return at ? translate("status.postponedAt", { time: at }) : translate("status.postponed");
   }
-  return "This task hasn't been marked complete yet.";
+  return translate("status.pending");
 }
+
 
 
 export type Caregiver = {

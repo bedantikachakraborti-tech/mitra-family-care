@@ -13,6 +13,7 @@ export type Profile = {
   location: string;
   phone: string;
   relationship: string;
+  ui_language?: string;
 };
 
 /** Live Supabase session, kept in sync with sign in / sign out. */
@@ -42,7 +43,7 @@ export const myProfileQuery = queryOptions({
     if (!auth.user) return null;
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, role, full_name, location, phone, relationship")
+      .select("id, role, full_name, location, phone, relationship, ui_language")
       .eq("id", auth.user.id)
       .maybeSingle();
     if (error) throw new Error(error.message);

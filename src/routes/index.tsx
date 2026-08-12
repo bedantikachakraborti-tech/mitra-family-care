@@ -8,9 +8,13 @@ import {
   Users,
 } from "lucide-react";
 import heroImage from "@/assets/mitra-hero.jpg";
+import { LanguageSelect } from "@/components/language-select";
 import { MitraMark } from "@/components/mitra-mark";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui-kit";
+import { useMyProfile, useSession, useSignOut } from "@/lib/auth";
+import { useT } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,32 +54,65 @@ const features = [
 ];
 
 function Landing() {
+  const t = useT();
+  const { user, ready } = useSession();
+  const profile = useMyProfile();
+  const signOut = useSignOut();
+  const homeTo = profile.data?.role === "caregiver" ? "/caregiver" : "/family";
+
   return (
     <div className="min-h-screen bg-warm-gradient">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+      <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5 sm:px-6">
         <div className="flex min-w-0 items-center gap-2">
           <MitraMark className="h-10 w-10" />
           <span className="font-display text-xl font-semibold">Mitra</span>
         </div>
-        <Button asChild size="lg" className="rounded-full">
-          <Link to="/role">Get started</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <LanguageSelect />
+          {ready && user ? (
+            <>
+              <Button asChild size="lg" className="rounded-full">
+                <Link to={homeTo}>{t("nav.home")}</Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => void signOut()}
+              >
+                {t("action.signOut")}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button asChild size="lg" variant="outline" className="rounded-full">
+                <Link to="/auth" search={{ mode: "signin" }}>
+                  {t("action.signIn")}
+                </Link>
+              </Button>
+              <Button asChild size="lg" className="rounded-full">
+                <Link to="/role">{t("action.getStarted")}</Link>
+              </Button>
+            </>
+          )}
+        </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
         <section className="grid items-center gap-10 pt-6 pb-14 lg:grid-cols-2 lg:gap-14 lg:pt-14">
           <div>
-            <Pill tone="sage">Care is better together.</Pill>
+            <Pill tone="sage">{t("brand.tagline")}</Pill>
             <h1 className="mt-5 text-4xl leading-[1.08] font-semibold sm:text-5xl lg:text-6xl">
-              Looking after someone you love, without carrying it alone.
+              {t("landing.headline")}
             </h1>
             <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-              Mitra connects families with trusted caregivers and keeps everyone on the same, gentle
-              page — the plan for the day, how it actually went, and what comes next.
+              {t("landing.sub")}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" className="h-13 rounded-full px-8 text-base">
-                <Link to="/role">Find care for my family</Link>
+                <Link to="/auth" search={{ role: "family", mode: "signup" }}>
+                  {t("landing.ctaFamily")}
+                </Link>
               </Button>
               <Button
                 asChild
@@ -83,18 +120,21 @@ function Landing() {
                 variant="outline"
                 className="h-13 rounded-full px-8 text-base"
               >
-                <Link to="/onboarding/caregiver">I'm a caregiver</Link>
+                <Link to="/auth" search={{ role: "caregiver", mode: "signup" }}>
+                  {t("landing.ctaCaregiver")}
+                </Link>
               </Button>
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
               <span className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" aria-hidden /> Verified caregivers
+                <ShieldCheck className="h-4 w-4" aria-hidden /> Caregiver profiles in their own words
               </span>
               <span className="flex items-center gap-2">
                 <HeartHandshake className="h-4 w-4" aria-hidden /> Built with families
               </span>
             </div>
           </div>
+
 
           <div className="relative">
             <div className="overflow-hidden rounded-[2.5rem] border border-border bg-card shadow-lift">
@@ -132,10 +172,10 @@ function Landing() {
           <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="max-w-xl">
               <span className="inline-flex items-center gap-2 text-sm font-medium">
-                <Sparkles className="h-4 w-4" aria-hidden /> Coming soon
+                <Sparkles className="h-4 w-4" aria-hidden /> In every language you speak
               </span>
               <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">
-                An assistant that helps you write the update, not another form to fill.
+                Speak or type in your own language. Mitra writes the plan, you approve it.
               </h2>
             </div>
             <Button
@@ -144,8 +184,9 @@ function Landing() {
               variant="secondary"
               className="h-13 rounded-full px-8 text-base"
             >
-              <Link to="/role">Choose your role</Link>
+              <Link to="/role">{t("action.getStarted")}</Link>
             </Button>
+
           </div>
         </section>
       </main>

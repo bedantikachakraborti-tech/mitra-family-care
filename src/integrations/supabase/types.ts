@@ -271,6 +271,7 @@ export type Database = {
           phone: string
           relationship: string
           role: Database["public"]["Enums"]["app_role"]
+          ui_language: string
           updated_at: string
         }
         Insert: {
@@ -281,6 +282,7 @@ export type Database = {
           phone?: string
           relationship?: string
           role?: Database["public"]["Enums"]["app_role"]
+          ui_language?: string
           updated_at?: string
         }
         Update: {
@@ -291,6 +293,7 @@ export type Database = {
           phone?: string
           relationship?: string
           role?: Database["public"]["Enums"]["app_role"]
+          ui_language?: string
           updated_at?: string
         }
         Relationships: []
