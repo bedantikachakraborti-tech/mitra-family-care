@@ -137,8 +137,14 @@ export type Caregiver = {
   hourly_rate: number;
   certifications: string[];
   specialties: string[];
+  preferred_hours?: string;
+  availability_negotiable?: boolean;
+  hours_negotiable?: boolean;
+  location_negotiable?: boolean;
+  rate_negotiable?: boolean;
   user_id?: string | null;
 };
+
 
 export type CareRequest = {
   id: string;
