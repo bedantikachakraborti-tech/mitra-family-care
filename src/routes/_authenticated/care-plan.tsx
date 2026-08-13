@@ -6,12 +6,15 @@ import { Clock, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
+import { VoiceIntake } from "@/components/voice-intake";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Pill, SoftCard, SectionTitle } from "@/components/ui-kit";
 import { structureCarePlan } from "@/lib/ai.functions";
+import { languageName, useLanguage } from "@/lib/i18n";
 import { addTasks, deleteTask, ensurePlan, updateTask } from "@/lib/care-data";
+
 import {
   DAYS,
   DAY_LABELS,
