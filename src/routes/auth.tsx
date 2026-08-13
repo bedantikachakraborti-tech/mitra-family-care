@@ -134,13 +134,29 @@ function AuthPage() {
 
         <SoftCard>
           <h1 className="text-2xl font-semibold">
-            {mode === "signup" ? t("auth.createTitle") : t("auth.signInTitle")}
+            {mode === "forgot"
+              ? "Reset your password"
+              : mode === "signup"
+                ? t("auth.createTitle")
+                : t("auth.signInTitle")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signup" ? t("auth.createSub") : t("auth.signInSub")}
+            {mode === "forgot"
+              ? "Enter the email you use for Mitra and we'll send a reset link."
+              : mode === "signup"
+                ? t("auth.createSub")
+                : t("auth.signInSub")}
           </p>
 
+          {mode === "forgot" && resetSent && (
+            <p className="mt-4 rounded-2xl bg-secondary px-4 py-3 text-sm">
+              If an account uses that email, a password reset link is on its way. Follow the link to
+              choose a new password, then sign in again.
+            </p>
+          )}
+
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+
             {mode === "signup" && (
               <>
                 {rolePreselected ? (
