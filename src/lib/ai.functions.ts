@@ -70,9 +70,19 @@ export const rankCaregivers = createServerFn({ method: "POST" })
             years_experience: z.number(),
             languages: z.array(z.string()),
             skills: z.array(z.string()),
+            specialties: z.array(z.string()).default([]),
             area: z.string(),
             availability: z.string(),
+            preferred_hours: z.string().default(""),
             hourly_rate: z.number(),
+            negotiable: z
+              .object({
+                availability: z.boolean().default(false),
+                hours: z.boolean().default(false),
+                location: z.boolean().default(false),
+                rate: z.boolean().default(false),
+              })
+              .default({ availability: false, hours: false, location: false, rate: false }),
           }),
         ),
       })
@@ -86,12 +96,19 @@ export const rankCaregivers = createServerFn({ method: "POST" })
 Return JSON: { "matches": [ { "caregiverId": string, "score": number, "rationale": string, "considerations": string } ] }
 - Include every caregiver given to you, ordered best fit first.
 - "score" is 0-100 and reflects only practical fit: skills, availability, schedule, languages spoken, location and stated preferences.
+- Each caregiver has a "negotiable" object saying which of their preferences they marked as flexible
+  (availability, preferred hours, location/travel, hourly rate).
+  * A mismatch on a preference they did NOT mark negotiable is a hard mismatch: reduce the score substantially.
+  * A mismatch on a preference they DID mark negotiable should only reduce the score moderately and must not
+    disqualify them; mention in "considerations" that this is something they said could be discussed.
+  * Never assume a preference is negotiable when the flag is false.
 - "rationale" is 1-2 warm sentences about why this could work well.
 - "considerations" is one neutral sentence about what the family may want to ask or check.
 - Never comment on trustworthiness, safety, character or background checks.
 - Never use age, gender, caste, religion, ethnicity or any protected characteristic.`,
         user: JSON.stringify({ requirements: data.requirements, caregivers: data.caregivers }),
       });
+
 
       const parsed = z
         .array(
