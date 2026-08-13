@@ -59,16 +59,22 @@ function CarePlanPage() {
   const { request, planId, tasks, caregiver } = useCareContext();
   const [description, setDescription] = useState("");
   const [drafts, setDrafts] = useState<DraftTask[] | null>(null);
+  const { lang: uiLang } = useLanguage();
 
   const parsePlan = useServerFn(structureCarePlan);
 
   const build = useMutation({
     mutationFn: async () => {
       const result = await parsePlan({
-        data: { description, personName: request?.person_name ?? "" },
+        data: {
+          description,
+          personName: request?.person_name ?? "",
+          outputLanguage: languageName(uiLang),
+        },
       });
       return result;
     },
+
     onSuccess: (result) => {
       setDrafts(result);
       if (result.length === 0) toast.message("Mitra couldn't find any routines in that text yet.");
