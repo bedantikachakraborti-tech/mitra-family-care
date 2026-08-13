@@ -219,36 +219,70 @@ function AuthPage() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="password">{t("auth.password")}</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={6}
-                className="mt-2 h-12 rounded-2xl"
-                required
-              />
-            </div>
+            {mode !== "forgot" && (
+              <div>
+                <Label htmlFor="password">{t("auth.password")}</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
+                  className="mt-2 h-12 rounded-2xl"
+                  required
+                />
+              </div>
+            )}
 
             <Button type="submit" size="lg" disabled={busy} className="h-13 w-full rounded-full">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
-              {mode === "signup" ? t("auth.createAccount") : t("action.signIn")}
+              {mode === "forgot"
+                ? "Send reset link"
+                : mode === "signup"
+                  ? t("auth.createAccount")
+                  : t("action.signIn")}
             </Button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
-            <button
-              type="button"
-              className="font-semibold text-primary underline"
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-            >
-              {mode === "signup" ? t("action.signIn") : t("auth.createOne")}
-            </button>
-          </p>
+          {mode === "signin" && (
+            <p className="mt-4 text-center text-sm">
+              <button
+                type="button"
+                className="font-semibold text-primary underline"
+                onClick={() => {
+                  setResetSent(false);
+                  setMode("forgot");
+                }}
+              >
+                Forgot password?
+              </button>
+            </p>
+          )}
+
+          {mode === "forgot" ? (
+            <p className="mt-5 text-center text-sm text-muted-foreground">
+              <button
+                type="button"
+                className="font-semibold text-primary underline"
+                onClick={() => setMode("signin")}
+              >
+                Back to sign in
+              </button>
+            </p>
+          ) : (
+            <p className="mt-5 text-center text-sm text-muted-foreground">
+              {mode === "signup" ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
+              <button
+                type="button"
+                className="font-semibold text-primary underline"
+                onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              >
+                {mode === "signup" ? t("action.signIn") : t("auth.createOne")}
+              </button>
+            </p>
+          )}
+
         </SoftCard>
       </div>
     </div>
