@@ -3,8 +3,10 @@ import { z } from "zod";
 
 import { AiError, callAiJson, callAiText } from "./ai.server";
 import type { CareRequirements, DraftTask, MatchSuggestion } from "./care-types";
+import { normalizeList } from "./list-input";
 
-const stringArray = z.array(z.string()).default([]);
+const stringArray = z.preprocess((value) => normalizeList(value), z.array(z.string())).default([]);
+
 
 function toMessage(error: unknown): never {
   if (error instanceof AiError) throw new Error(error.message);
