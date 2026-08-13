@@ -181,14 +181,19 @@ export type Database = {
           about: string
           area: string
           availability: string
+          availability_negotiable: boolean
           certifications: string[]
           created_at: string
           headline: string
           hourly_rate: number
+          hours_negotiable: boolean
           id: string
           initials: string
           languages: string[]
+          location_negotiable: boolean
           name: string
+          preferred_hours: string
+          rate_negotiable: boolean
           skills: string[]
           specialties: string[]
           user_id: string | null
@@ -198,14 +203,19 @@ export type Database = {
           about?: string
           area?: string
           availability?: string
+          availability_negotiable?: boolean
           certifications?: string[]
           created_at?: string
           headline?: string
           hourly_rate?: number
+          hours_negotiable?: boolean
           id?: string
           initials?: string
           languages?: string[]
+          location_negotiable?: boolean
           name: string
+          preferred_hours?: string
+          rate_negotiable?: boolean
           skills?: string[]
           specialties?: string[]
           user_id?: string | null
@@ -215,14 +225,19 @@ export type Database = {
           about?: string
           area?: string
           availability?: string
+          availability_negotiable?: boolean
           certifications?: string[]
           created_at?: string
           headline?: string
           hourly_rate?: number
+          hours_negotiable?: boolean
           id?: string
           initials?: string
           languages?: string[]
+          location_negotiable?: boolean
           name?: string
+          preferred_hours?: string
+          rate_negotiable?: boolean
           skills?: string[]
           specialties?: string[]
           user_id?: string | null
