@@ -134,16 +134,19 @@ function CarePlanPage() {
       <SoftCard tone="honey">
         <h2 className="text-lg font-semibold">Describe the day in your own words</h2>
         <p className="mt-2 text-sm opacity-90">
-          Mitra turns it into a draft of recurring tasks. Nothing is saved until you confirm. Only
-          medicines and doses you write yourself are ever included.
+          Speak or type it — in English, हिन्दी, বাংলা or தமிழ். Mitra turns it into a draft of
+          recurring tasks written in {languageName(uiLang)}. Nothing is saved until you confirm, and
+          only medicines and doses you give yourself are ever included.
         </p>
-        <Textarea
-          rows={6}
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder="She wakes around 7, likes tea before anything else. Short walk at 10 if it isn't too hot. Lunch at 12:30, soft food, low salt…"
-          className="mt-4 rounded-2xl bg-card text-foreground"
-        />
+        <div className="mt-4">
+          <VoiceIntake
+            value={description}
+            onChange={setDescription}
+            rows={6}
+            placeholder="She wakes around 7, likes tea before anything else. Short walk at 10 if it isn't too hot. Lunch at 12:30, soft food, low salt…"
+          />
+        </div>
+
         <div className="mt-4 flex justify-end">
           <Button
             size="lg"
