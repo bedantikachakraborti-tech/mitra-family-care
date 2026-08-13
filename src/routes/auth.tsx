@@ -74,6 +74,16 @@ function AuthPage() {
     event.preventDefault();
     setBusy(true);
     try {
+      if (mode === "forgot") {
+        // Always show the same confirmation, so this can't be used to discover accounts.
+        await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        setResetSent(true);
+        return;
+      }
+
+
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
