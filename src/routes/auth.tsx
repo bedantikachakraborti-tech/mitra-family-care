@@ -42,12 +42,14 @@ function AuthPage() {
   const search = useSearch({ from: "/auth" });
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
-  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signup");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(search.mode ?? "signup");
   const [role, setRole] = useState<AppRole>(search.role ?? "family");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
 
   // The role comes from the landing page or role picker, so we don't ask twice.
   const rolePreselected = Boolean(search.role);
