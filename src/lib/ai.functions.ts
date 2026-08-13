@@ -376,3 +376,46 @@ Never comment on trustworthiness, safety or character.`,
       return toMessage(error);
     }
   });
+
+/** Turn a family member's spoken or typed introduction into a structured profile draft. */
+export const structureFamilyProfile = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        description: z.string().trim().min(5).max(4000),
+        outputLanguage: z.string().default("English"),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    try {
+      const result = await callAiJson<Record<string, unknown>>({
+        system: `Convert a family member's own words into a structured contact profile draft.
+Return JSON with exactly these keys:
+{
+  "fullName": string,     // their own name if they said it, else ""
+  "relationship": string, // their relationship to the person they care for, e.g. "Daughter", else ""
+  "location": string,     // their neighbourhood / city if stated, else ""
+  "phone": string         // phone number if stated, digits and + only, else ""
+}
+They may speak or type in any language, including Bengali, Hindi and Tamil.
+Write "relationship" in ${data.outputLanguage}.
+Keep proper nouns exactly as said: personal names, neighbourhoods and city names are never translated,
+transliterated beyond what is natural, or split ("New Delhi" stays "New Delhi").
+Only include what they actually said; leave anything else as "".
+Do not collect or infer health details, income, age, gender, religion or any other sensitive information.`,
+        user: data.description,
+      });
+
+      return z
+        .object({
+          fullName: z.string().default(""),
+          relationship: z.string().default(""),
+          location: z.string().default(""),
+          phone: z.string().default(""),
+        })
+        .parse(result);
+    } catch (error) {
+      return toMessage(error);
+    }
+  });
