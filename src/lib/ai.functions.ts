@@ -137,6 +137,7 @@ export const structureCarePlan = createServerFn({ method: "POST" })
       .object({
         description: z.string().trim().min(10).max(4000),
         personName: z.string().default(""),
+        outputLanguage: z.string().default("English"),
       })
       .parse(input),
   )
@@ -151,10 +152,14 @@ Return JSON: { "tasks": [ { "title": string, "details": string, "category": stri
 - "scheduledTime" is 24h "HH:MM" when a time was stated, otherwise "".
 - "days" uses mon,tue,wed,thu,fri,sat,sun. Use all seven when the family says "every day".
 - "title" is short and friendly; "details" repeats only what the family wrote.
+- The family may speak or type in any language, including Bengali, Hindi and Tamil.
+  Write "title" and "details" in ${data.outputLanguage}, keeping personal names, places and
+  medicine names exactly as the family said them.
 - For medication tasks, repeat the medicine name and dose exactly as written and add nothing.
   If no dose was written, leave it out. Never invent dosages, timings or medical advice.
 - Do not add tasks the family did not describe.`,
         user: `Person receiving care: ${data.personName || "not stated"}\n\n${data.description}`,
+
       });
 
       return z
