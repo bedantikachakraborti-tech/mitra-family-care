@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { BadgeCheck, Loader2, MapPin, Mic, MicOff, Sparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { BadgeCheck, Loader2, MapPin, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
+import { DeleteAccountCard } from "@/components/delete-account";
+import { TagField } from "@/components/tag-field";
+import { VoiceIntake } from "@/components/voice-intake";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,8 +22,8 @@ import {
   saveMyCaregiverProfile,
   type CaregiverProfileInput,
 } from "@/lib/caregiver-profile";
-import { languageName, speechLocale, useLanguage } from "@/lib/i18n";
-import { useSpeechInput } from "@/lib/use-speech-input";
+import { languageName, useLanguage } from "@/lib/i18n";
+import { listToText } from "@/lib/list-input";
 
 export const Route = createFileRoute("/_authenticated/caregiver/profile")({
   head: () => ({
@@ -37,25 +41,6 @@ export const Route = createFileRoute("/_authenticated/caregiver/profile")({
   component: CaregiverProfilePage,
 });
 
-const LANGUAGE_CHOICES = [
-  { code: "en-IN", label: "English" },
-  { code: "hi-IN", label: "हिन्दी" },
-  { code: "kn-IN", label: "ಕನ್ನಡ" },
-  { code: "ml-IN", label: "മലയാളം" },
-  { code: "ta-IN", label: "தமிழ்" },
-  { code: "mr-IN", label: "मराठी" },
-];
-
-function listToText(values: string[]) {
-  return values.join(", ");
-}
-function textToList(value: string) {
-  return value
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean);
-}
-
 function CaregiverProfilePage() {
   const queryClient = useQueryClient();
   const existing = useQuery(myCaregiverQuery);
@@ -63,9 +48,8 @@ function CaregiverProfilePage() {
   const [loaded, setLoaded] = useState(false);
   const [story, setStory] = useState("");
   const { lang: uiLang } = useLanguage();
-  const [lang, setLang] = useState(speechLocale(uiLang));
   const [draft, setDraft] = useState<CaregiverProfileInput | null>(null);
-  const speech = useSpeechInput(lang);
+  const extractProfile = useServerFn(structureCaregiverProfile);
 
   useEffect(() => {
     if (loaded || !existing.data) return;
@@ -82,19 +66,19 @@ function CaregiverProfilePage() {
       certifications: c.certifications ?? [],
       area: c.area,
       availability: c.availability,
+      preferred_hours: c.preferred_hours ?? "",
       hourly_rate: c.hourly_rate,
+      availability_negotiable: c.availability_negotiable ?? false,
+      hours_negotiable: c.hours_negotiable ?? false,
+      location_negotiable: c.location_negotiable ?? false,
+      rate_negotiable: c.rate_negotiable ?? false,
     });
     setLoaded(true);
   }, [existing.data, loaded]);
 
-  useEffect(() => {
-    if (speech.transcript) setStory((prev) => (prev ? `${prev} ${speech.transcript}` : speech.transcript));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [speech.transcript]);
-
   const extract = useMutation({
     mutationFn: (description: string) =>
-      structureCaregiverProfile({ data: { description, outputLanguage: languageName(uiLang) } }),
+      extractProfile({ data: { description, outputLanguage: languageName(uiLang) } }),
     onSuccess: (result) => {
       setDraft({
         ...form,
@@ -108,7 +92,12 @@ function CaregiverProfilePage() {
         certifications: result.certifications.length ? result.certifications : form.certifications,
         area: result.area || form.area,
         availability: result.availability || form.availability,
+        preferred_hours: result.preferredHours || form.preferred_hours,
         hourly_rate: result.hourlyRate || form.hourly_rate,
+        availability_negotiable: result.availabilityNegotiable || form.availability_negotiable,
+        hours_negotiable: result.hoursNegotiable || form.hours_negotiable,
+        location_negotiable: result.locationNegotiable || form.location_negotiable,
+        rate_negotiable: result.rateNegotiable || form.rate_negotiable,
       });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -152,48 +141,20 @@ function CaregiverProfilePage() {
       <SoftCard tone="sage">
         <SectionTitle hint="Optional">Tell us in your own words</SectionTitle>
         <p className="text-sm opacity-90">
-          Speak or type about your experience in the language you're most comfortable with. Mitra
-          drafts the profile fields for you — nothing is saved until you review and confirm.
+          Speak or type about your experience in the language you're most comfortable with —
+          English, हिन्दी, বাংলা or தமிழ். Mitra writes the profile back in{" "}
+          {languageName(uiLang)}, the language you're using the app in. Nothing is saved until you
+          review and confirm.
         </p>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <select
-            aria-label="Speaking language"
-            value={lang}
-            onChange={(event) => setLang(event.target.value)}
-            className="h-11 rounded-2xl border border-border bg-card px-3 text-sm"
-          >
-            {LANGUAGE_CHOICES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
-          {speech.supported && (
-            <Button
-              type="button"
-              size="lg"
-              variant={speech.listening ? "default" : "outline"}
-              className="h-11 rounded-full"
-              onClick={speech.listening ? speech.stop : speech.start}
-            >
-              {speech.listening ? (
-                <MicOff className="mr-2 h-4 w-4" aria-hidden />
-              ) : (
-                <Mic className="mr-2 h-4 w-4" aria-hidden />
-              )}
-              {speech.listening ? "Stop recording" : "Speak about your experience"}
-            </Button>
-          )}
+        <div className="mt-4">
+          <VoiceIntake
+            value={story}
+            onChange={setStory}
+            placeholder="I've cared for elders for six years in Bengaluru. I speak Bengali, Hindi and English, I'm good with mobility support and meal preparation, and I'm free on weekday mornings."
+          />
         </div>
 
-        <Textarea
-          rows={5}
-          value={story}
-          onChange={(event) => setStory(event.target.value)}
-          placeholder="I've cared for elders for six years in Bengaluru. I speak Malayalam, Kannada and English, I'm good with mobility support and medication reminders, and I'm free on weekday mornings."
-          className="mt-3 rounded-2xl bg-card"
-        />
         <div className="mt-3">
           <Button
             type="button"
@@ -214,8 +175,11 @@ function CaregiverProfilePage() {
 
       {draft && (
         <SoftCard tone="honey">
-          <SectionTitle hint="Review before it fills the form">Suggested from what you said</SectionTitle>
+          <SectionTitle hint="Review before it fills the form">
+            Suggested from what you said
+          </SectionTitle>
           <ul className="space-y-1 text-sm opacity-90">
+            {draft.name && <li>Name: {draft.name}</li>}
             {draft.headline && <li>Headline: {draft.headline}</li>}
             {draft.about && <li>About: {draft.about}</li>}
             {draft.years_experience > 0 && <li>Experience: {draft.years_experience} years</li>}
@@ -227,6 +191,7 @@ function CaregiverProfilePage() {
             )}
             {draft.area && <li>Location: {draft.area}</li>}
             {draft.availability && <li>Availability: {draft.availability}</li>}
+            {draft.preferred_hours && <li>Preferred hours: {draft.preferred_hours}</li>}
           </ul>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
@@ -274,18 +239,6 @@ function CaregiverProfilePage() {
             value={String(form.hourly_rate)}
             onChange={(v) => set("hourly_rate", Number(v) || 0)}
           />
-          <TextField
-            label="Location"
-            value={form.area}
-            onChange={(v) => set("area", v)}
-            placeholder="Indiranagar, Bengaluru"
-          />
-          <TextField
-            label="Availability"
-            value={form.availability}
-            onChange={(v) => set("availability", v)}
-            placeholder="Weekday mornings, 7am–1pm"
-          />
         </div>
 
         <div className="mt-4">
@@ -300,26 +253,76 @@ function CaregiverProfilePage() {
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <TextField
-            label="Languages (comma separated)"
-            value={listToText(form.languages)}
-            onChange={(v) => set("languages", textToList(v))}
+          <TagField
+            label="Languages"
+            values={form.languages}
+            onChange={(v) => set("languages", v)}
+            placeholder="English, Hindi, Bengali"
           />
-          <TextField
-            label="Skills (comma separated)"
-            value={listToText(form.skills)}
-            onChange={(v) => set("skills", textToList(v))}
+          <TagField
+            label="Skills"
+            values={form.skills}
+            onChange={(v) => set("skills", v)}
+            placeholder="mobility assistance, meal preparation"
           />
-          <TextField
-            label="Care specialties (comma separated)"
-            value={listToText(form.specialties)}
-            onChange={(v) => set("specialties", textToList(v))}
+          <TagField
+            label="Care specialties"
+            values={form.specialties}
+            onChange={(v) => set("specialties", v)}
+            placeholder="elder care, dementia care"
           />
-          <TextField
-            label="Certifications (comma separated)"
-            value={listToText(form.certifications)}
-            onChange={(v) => set("certifications", textToList(v))}
+          <TagField
+            label="Certifications"
+            values={form.certifications}
+            onChange={(v) => set("certifications", v)}
+            placeholder="Home nursing certificate"
           />
+        </div>
+      </SoftCard>
+
+      <SoftCard>
+        <SectionTitle hint="Tick only what you're genuinely flexible about">
+          Availability and preferences
+        </SectionTitle>
+        <p className="text-sm text-muted-foreground">
+          Anything you don't mark as negotiable is treated as a firm preference when Mitra suggests
+          you to families.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <PreferenceField
+            label="Availability"
+            value={form.availability}
+            onChange={(v) => set("availability", v)}
+            placeholder="Weekday mornings"
+            negotiable={form.availability_negotiable}
+            onNegotiableChange={(v) => set("availability_negotiable", v)}
+          />
+          <PreferenceField
+            label="Preferred working hours"
+            value={form.preferred_hours}
+            onChange={(v) => set("preferred_hours", v)}
+            placeholder="8 AM – 12 PM"
+            negotiable={form.hours_negotiable}
+            onNegotiableChange={(v) => set("hours_negotiable", v)}
+          />
+          <PreferenceField
+            label="Location / travel area"
+            value={form.area}
+            onChange={(v) => set("area", v)}
+            placeholder="Indiranagar, Bengaluru"
+            negotiable={form.location_negotiable}
+            onNegotiableChange={(v) => set("location_negotiable", v)}
+            negotiableLabel="I can travel further — negotiable"
+          />
+          <div className="rounded-2xl border border-border p-4">
+            <NegotiableToggle
+              id="rate-negotiable"
+              label={`Hourly rate (₹${form.hourly_rate}) is negotiable`}
+              checked={form.rate_negotiable}
+              onChange={(v) => set("rate_negotiable", v)}
+            />
+          </div>
         </div>
 
         <div className="mt-6 flex justify-end">
@@ -373,7 +376,74 @@ function CaregiverProfilePage() {
           )}
         </SoftCard>
       )}
+
+      <DeleteAccountCard />
     </AppShell>
+  );
+}
+
+function PreferenceField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  negotiable,
+  onNegotiableChange,
+  negotiableLabel = "Negotiable",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  negotiable: boolean;
+  onNegotiableChange: (value: boolean) => void;
+  negotiableLabel?: string;
+}) {
+  const id = label.toLowerCase().replace(/[^a-z]+/g, "-");
+  return (
+    <div className="rounded-2xl border border-border p-4">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 h-12 rounded-2xl"
+      />
+      <div className="mt-3">
+        <NegotiableToggle
+          id={`${id}-negotiable`}
+          label={negotiableLabel}
+          checked={negotiable}
+          onChange={onNegotiableChange}
+        />
+      </div>
+    </div>
+  );
+}
+
+function NegotiableToggle({
+  id,
+  label,
+  checked,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label htmlFor={id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-5 w-5 rounded border-border accent-[var(--primary)]"
+      />
+      <span>{label}</span>
+    </label>
   );
 }
 

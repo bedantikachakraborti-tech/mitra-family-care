@@ -42,12 +42,14 @@ function AuthPage() {
   const search = useSearch({ from: "/auth" });
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
-  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signup");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(search.mode ?? "signup");
   const [role, setRole] = useState<AppRole>(search.role ?? "family");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
 
   // The role comes from the landing page or role picker, so we don't ask twice.
   const rolePreselected = Boolean(search.role);
@@ -72,6 +74,16 @@ function AuthPage() {
     event.preventDefault();
     setBusy(true);
     try {
+      if (mode === "forgot") {
+        // Always show the same confirmation, so this can't be used to discover accounts.
+        await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        setResetSent(true);
+        return;
+      }
+
+
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -122,13 +134,29 @@ function AuthPage() {
 
         <SoftCard>
           <h1 className="text-2xl font-semibold">
-            {mode === "signup" ? t("auth.createTitle") : t("auth.signInTitle")}
+            {mode === "forgot"
+              ? "Reset your password"
+              : mode === "signup"
+                ? t("auth.createTitle")
+                : t("auth.signInTitle")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signup" ? t("auth.createSub") : t("auth.signInSub")}
+            {mode === "forgot"
+              ? "Enter the email you use for Mitra and we'll send a reset link."
+              : mode === "signup"
+                ? t("auth.createSub")
+                : t("auth.signInSub")}
           </p>
 
+          {mode === "forgot" && resetSent && (
+            <p className="mt-4 rounded-2xl bg-secondary px-4 py-3 text-sm">
+              If an account uses that email, a password reset link is on its way. Follow the link to
+              choose a new password, then sign in again.
+            </p>
+          )}
+
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+
             {mode === "signup" && (
               <>
                 {rolePreselected ? (
@@ -191,36 +219,70 @@ function AuthPage() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="password">{t("auth.password")}</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={6}
-                className="mt-2 h-12 rounded-2xl"
-                required
-              />
-            </div>
+            {mode !== "forgot" && (
+              <div>
+                <Label htmlFor="password">{t("auth.password")}</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
+                  className="mt-2 h-12 rounded-2xl"
+                  required
+                />
+              </div>
+            )}
 
             <Button type="submit" size="lg" disabled={busy} className="h-13 w-full rounded-full">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
-              {mode === "signup" ? t("auth.createAccount") : t("action.signIn")}
+              {mode === "forgot"
+                ? "Send reset link"
+                : mode === "signup"
+                  ? t("auth.createAccount")
+                  : t("action.signIn")}
             </Button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
-            <button
-              type="button"
-              className="font-semibold text-primary underline"
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-            >
-              {mode === "signup" ? t("action.signIn") : t("auth.createOne")}
-            </button>
-          </p>
+          {mode === "signin" && (
+            <p className="mt-4 text-center text-sm">
+              <button
+                type="button"
+                className="font-semibold text-primary underline"
+                onClick={() => {
+                  setResetSent(false);
+                  setMode("forgot");
+                }}
+              >
+                Forgot password?
+              </button>
+            </p>
+          )}
+
+          {mode === "forgot" ? (
+            <p className="mt-5 text-center text-sm text-muted-foreground">
+              <button
+                type="button"
+                className="font-semibold text-primary underline"
+                onClick={() => setMode("signin")}
+              >
+                Back to sign in
+              </button>
+            </p>
+          ) : (
+            <p className="mt-5 text-center text-sm text-muted-foreground">
+              {mode === "signup" ? t("auth.haveAccount") : t("auth.noAccount")}{" "}
+              <button
+                type="button"
+                className="font-semibold text-primary underline"
+                onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+              >
+                {mode === "signup" ? t("action.signIn") : t("auth.createOne")}
+              </button>
+            </p>
+          )}
+
         </SoftCard>
       </div>
     </div>

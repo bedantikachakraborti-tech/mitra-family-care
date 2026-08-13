@@ -15,7 +15,12 @@ export type CaregiverProfileInput = {
   certifications: string[];
   area: string;
   availability: string;
+  preferred_hours: string;
   hourly_rate: number;
+  availability_negotiable: boolean;
+  hours_negotiable: boolean;
+  location_negotiable: boolean;
+  rate_negotiable: boolean;
 };
 
 export const emptyCaregiverProfile: CaregiverProfileInput = {
@@ -30,8 +35,14 @@ export const emptyCaregiverProfile: CaregiverProfileInput = {
   certifications: [],
   area: "",
   availability: "",
+  preferred_hours: "",
   hourly_rate: 0,
+  availability_negotiable: false,
+  hours_negotiable: false,
+  location_negotiable: false,
+  rate_negotiable: false,
 };
+
 
 export function initialsOf(name: string): string {
   return name
