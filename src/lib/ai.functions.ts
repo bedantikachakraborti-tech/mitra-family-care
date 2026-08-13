@@ -331,12 +331,21 @@ Return JSON with exactly these keys:
   "certifications": string[], // only certifications they explicitly mentioned
   "area": string,             // neighbourhood / city if stated, else ""
   "availability": string,     // e.g. "Weekday mornings" if stated, else ""
-  "hourlyRate": number        // 0 if not stated
+  "preferredHours": string,   // e.g. "8 AM-12 PM" if stated, else ""
+  "hourlyRate": number,       // 0 if not stated
+  "availabilityNegotiable": boolean, // true ONLY if they said their availability is flexible
+  "hoursNegotiable": boolean,        // true ONLY if they said their hours are flexible
+  "locationNegotiable": boolean,     // true ONLY if they said they can travel further / area is flexible
+  "rateNegotiable": boolean          // true ONLY if they said the rate is negotiable
 }
-The caregiver may speak or type in any language.
+The caregiver may speak or type in any language, including Bengali, Hindi and Tamil.
 Write every text value in ${data.outputLanguage}, translating faithfully where needed.
-Keep personal names, place names and certification names as they were said; do not transliterate them beyond what is natural.
+Keep personal names, place names and certification names as they were said; do not translate proper nouns
+("New Delhi" stays "New Delhi", never split or rewritten).
+Multi-value fields must be JSON arrays with one value per entry, never a single comma-joined string.
+Keep multi-word values whole: "elder care", "meal preparation" and "mobility assistance" are three entries.
 Only include facts they actually said. Never invent experience, certifications or rates.
+All four negotiable flags default to false; set true only on an explicit statement of flexibility.
 Never comment on trustworthiness, safety or character.`,
         user: data.description,
       });
@@ -354,9 +363,15 @@ Never comment on trustworthiness, safety or character.`,
           certifications: stringArray,
           area: z.string().default(""),
           availability: z.string().default(""),
+          preferredHours: z.string().default(""),
           hourlyRate: z.coerce.number().default(0),
+          availabilityNegotiable: z.coerce.boolean().default(false),
+          hoursNegotiable: z.coerce.boolean().default(false),
+          locationNegotiable: z.coerce.boolean().default(false),
+          rateNegotiable: z.coerce.boolean().default(false),
         })
         .parse(result);
+
     } catch (error) {
       return toMessage(error);
     }
