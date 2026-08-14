@@ -177,9 +177,11 @@ export function statusLabel(
     ((key: string, vars?: Record<string, string>) => {
       const fallback: Record<string, string> = {
         "status.doneAt": `Completed at ${vars?.["time"] ?? ""}`,
+        "status.doneLate": `Completed at ${vars?.["time"] ?? ""}, after the agreed window`,
         "status.done": "Marked complete",
         "status.postponedAt": `Postponed — new time ${vars?.["time"] ?? ""}`,
         "status.postponed": "Postponed for now",
+        "status.cancelled": "This task wasn't marked complete within the agreed window.",
         "status.pending": "This task hasn't been marked complete yet.",
       };
       return fallback[key] ?? key;
@@ -187,14 +189,17 @@ export function statusLabel(
 
   if (log?.status === "done") {
     const at = clockTime(log.completed_at);
-    return at ? translate("status.doneAt", { time: at }) : translate("status.done");
+    if (!at) return translate("status.done");
+    return translate(log.outside_buffer ? "status.doneLate" : "status.doneAt", { time: at });
   }
   if (log?.status === "postponed") {
     const at = clockTime(log.postponed_to);
     return at ? translate("status.postponedAt", { time: at }) : translate("status.postponed");
   }
+  if (log?.status === "cancelled") return translate("status.cancelled");
   return translate("status.pending");
 }
+
 
 
 
