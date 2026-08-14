@@ -46,30 +46,39 @@ export type Database = {
           created_at: string
           family_user_id: string | null
           id: string
+          match_status: string
           person_name: string
           raw_description: string
           selected_caregiver_id: string | null
           structured: Json
+          unmatched_at: string | null
+          unmatched_by: string | null
         }
         Insert: {
           area?: string
           created_at?: string
           family_user_id?: string | null
           id?: string
+          match_status?: string
           person_name?: string
           raw_description?: string
           selected_caregiver_id?: string | null
           structured?: Json
+          unmatched_at?: string | null
+          unmatched_by?: string | null
         }
         Update: {
           area?: string
           created_at?: string
           family_user_id?: string | null
           id?: string
+          match_status?: string
           person_name?: string
           raw_description?: string
           selected_caregiver_id?: string | null
           structured?: Json
+          unmatched_at?: string | null
+          unmatched_by?: string | null
         }
         Relationships: [
           {
@@ -83,6 +92,7 @@ export type Database = {
       }
       care_tasks: {
         Row: {
+          buffer_minutes: number
           category: string
           created_at: string
           days: string[]
@@ -96,6 +106,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          buffer_minutes?: number
           category?: string
           created_at?: string
           days?: string[]
@@ -109,6 +120,7 @@ export type Database = {
           title: string
         }
         Update: {
+          buffer_minutes?: number
           category?: string
           created_at?: string
           days?: string[]
@@ -277,13 +289,97 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          read_at: string | null
+          request_id: string
+          sender_user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          request_id: string
+          sender_user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          request_id?: string
+          sender_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "care_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          dedupe_key: string
+          id: string
+          kind: string
+          link: string
+          read_at: string | null
+          request_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          kind: string
+          link?: string
+          read_at?: string | null
+          request_id?: string | null
+          title?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          kind?: string
+          link?: string
+          read_at?: string | null
+          request_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "care_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           full_name: string
           id: string
           location: string
+          notify_prompted: boolean
           phone: string
+          push_enabled: boolean
           relationship: string
           role: Database["public"]["Enums"]["app_role"]
           ui_language: string
@@ -294,7 +390,9 @@ export type Database = {
           full_name?: string
           id: string
           location?: string
+          notify_prompted?: boolean
           phone?: string
+          push_enabled?: boolean
           relationship?: string
           role?: Database["public"]["Enums"]["app_role"]
           ui_language?: string
@@ -305,7 +403,9 @@ export type Database = {
           full_name?: string
           id?: string
           location?: string
+          notify_prompted?: boolean
           phone?: string
+          push_enabled?: boolean
           relationship?: string
           role?: Database["public"]["Enums"]["app_role"]
           ui_language?: string
@@ -313,33 +413,86 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          categories: string[]
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          request_id: string
+          reviewee_user_id: string
+          reviewer_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          categories?: string[]
+          comment?: string
+          created_at?: string
+          id?: string
+          rating: number
+          request_id: string
+          reviewee_user_id: string
+          reviewer_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          categories?: string[]
+          comment?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          request_id?: string
+          reviewee_user_id?: string
+          reviewer_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "care_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_logs: {
         Row: {
           completed_at: string | null
+          created_at: string
           id: string
           log_date: string
           note: string
+          outside_buffer: boolean
           postponed_to: string
+          scheduled_at: string | null
           status: string
           task_id: string
           updated_at: string
         }
         Insert: {
           completed_at?: string | null
+          created_at?: string
           id?: string
           log_date?: string
           note?: string
+          outside_buffer?: boolean
           postponed_to?: string
+          scheduled_at?: string | null
           status?: string
           task_id: string
           updated_at?: string
         }
         Update: {
           completed_at?: string | null
+          created_at?: string
           id?: string
           log_date?: string
           note?: string
+          outside_buffer?: boolean
           postponed_to?: string
+          scheduled_at?: string | null
           status?: string
           task_id?: string
           updated_at?: string
@@ -360,9 +513,11 @@ export type Database = {
     }
     Functions: {
       can_access_request: { Args: { _request_id: string }; Returns: boolean }
+      has_active_match: { Args: { _request_id: string }; Returns: boolean }
       my_caregiver_id: { Args: never; Returns: string }
       owns_request: { Args: { _request_id: string }; Returns: boolean }
       plan_request: { Args: { _plan_id: string }; Returns: string }
+      request_counterpart: { Args: { _request_id: string }; Returns: string }
       task_request: { Args: { _task_id: string }; Returns: string }
     }
     Enums: {
