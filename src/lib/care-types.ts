@@ -233,6 +233,10 @@ export type CareRequest = {
   raw_description: string;
   structured: CareRequirements;
   selected_caregiver_id: string | null;
+  match_status: MatchStatus;
+  unmatched_at?: string | null;
+  unmatched_by?: string | null;
+  family_user_id?: string | null;
   created_at: string;
 };
 
