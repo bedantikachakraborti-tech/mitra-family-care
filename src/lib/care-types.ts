@@ -54,7 +54,17 @@ export type DraftTask = {
   days: DayKey[];
 };
 
-export type TaskStatus = "pending" | "done" | "postponed";
+export type TaskStatus = "pending" | "done" | "postponed" | "cancelled";
+
+/** How long after the scheduled time a task can still be marked complete. */
+export const BUFFER_MIN = 10;
+export const BUFFER_MAX = 60;
+export const BUFFER_DEFAULT = 30;
+
+export function clampBuffer(value: number): number {
+  if (!Number.isFinite(value)) return BUFFER_DEFAULT;
+  return Math.min(BUFFER_MAX, Math.max(BUFFER_MIN, Math.round(value)));
+}
 
 export type CareTask = {
   id: string;
@@ -67,6 +77,7 @@ export type CareTask = {
   days: string[];
   is_active: boolean;
   source: string;
+  buffer_minutes: number;
   created_at: string;
 };
 
@@ -78,8 +89,72 @@ export type TaskLog = {
   note: string;
   completed_at: string | null;
   postponed_to: string;
+  scheduled_at: string | null;
+  outside_buffer: boolean;
   updated_at: string;
 };
+
+export type MatchStatus = "pending" | "active" | "unmatched";
+
+export type Message = {
+  id: string;
+  request_id: string;
+  sender_user_id: string;
+  body: string;
+  read_at: string | null;
+  created_at: string;
+};
+
+export type AppNotification = {
+  id: string;
+  user_id: string;
+  request_id: string | null;
+  kind: string;
+  title: string;
+  body: string;
+  link: string;
+  dedupe_key: string;
+  read_at: string | null;
+  created_at: string;
+};
+
+export type Review = {
+  id: string;
+  request_id: string;
+  reviewer_user_id: string;
+  reviewee_user_id: string;
+  rating: number;
+  comment: string;
+  categories: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+/** The moment a task occurrence is due on a given day, honouring any postponement. */
+export function occurrenceDue(
+  task: Pick<CareTask, "scheduled_time">,
+  log: Pick<TaskLog, "postponed_to"> | undefined,
+  date: string,
+): Date | null {
+  const time = (log?.postponed_to || task.scheduled_time || "").trim();
+  const match = /^(\d{1,2}):(\d{2})/.exec(time);
+  if (!match) return null;
+  const [y, m, d] = date.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d, Number(match[1]), Number(match[2]), 0, 0);
+}
+
+/** The last moment a task occurrence can still be marked complete. */
+export function bufferEnd(
+  task: Pick<CareTask, "scheduled_time" | "buffer_minutes">,
+  log: Pick<TaskLog, "postponed_to"> | undefined,
+  date: string,
+): Date | null {
+  const due = occurrenceDue(task, log, date);
+  if (!due) return null;
+  return new Date(due.getTime() + clampBuffer(task.buffer_minutes) * 60_000);
+}
+
 
 /** Formats "14:05" or an ISO timestamp as a friendly clock time. */
 export function clockTime(value: string | null | undefined): string {
