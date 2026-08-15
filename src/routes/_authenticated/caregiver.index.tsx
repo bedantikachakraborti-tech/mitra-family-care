@@ -35,16 +35,48 @@ function CaregiverDashboard() {
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
 
+  const counterpart = useQuery(counterpartQuery(request?.id));
+  useCareRealtime(request?.id);
+
   const save = useMutation({
-    mutationFn: (input: {
-      taskId: string;
+    mutationFn: async (input: {
+      task: CareTask;
       status: TaskStatus;
       note: string;
       postponedTo?: string | undefined;
-    }) => setTaskLog({ ...input, date }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task-logs"] }),
+    }) => {
+      const existing = logFor(logs, input.task.id);
+      await setTaskLog({
+        taskId: input.task.id,
+        status: input.status,
+        note: input.note,
+        postponedTo: input.postponedTo,
+        date,
+        task: input.task,
+        existingPostponedTo: existing?.postponed_to ?? "",
+      });
+      if (request && (input.status === "done" || input.status === "postponed")) {
+        await notifyCounterpart({
+          requestId: request.id,
+          counterpartUserId: counterpart.data,
+          kind: `task-${input.status}`,
+          title:
+            input.status === "done"
+              ? `${input.task.title} marked complete`
+              : `${input.task.title} postponed`,
+          body: input.note,
+          link: "/shared",
+          dedupeKey: `task-${input.task.id}-${date}-${input.status}-${input.postponedTo ?? ""}`,
+        });
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["task-logs"] });
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
     onError: (error: Error) => toast.error(error.message),
   });
+
 
   if (!isLoading && today.length === 0) {
     return (
