@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, Clock, Loader2, NotebookPen, Timer } from "lucide-react";
 import { toast } from "sonner";
@@ -8,9 +8,11 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
-import { setTaskLog } from "@/lib/care-data";
+import { counterpartQuery, setTaskLog } from "@/lib/care-data";
+import { notifyCounterpart, useCareRealtime } from "@/lib/care-social";
 import { statusLabel, type CareTask, type TaskLog, type TaskStatus } from "@/lib/care-types";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
+
 
 export const Route = createFileRoute("/_authenticated/caregiver/")({
   head: () => ({
@@ -35,16 +37,48 @@ function CaregiverDashboard() {
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
 
+  const counterpart = useQuery(counterpartQuery(request?.id));
+  useCareRealtime(request?.id);
+
   const save = useMutation({
-    mutationFn: (input: {
-      taskId: string;
+    mutationFn: async (input: {
+      task: CareTask;
       status: TaskStatus;
       note: string;
       postponedTo?: string | undefined;
-    }) => setTaskLog({ ...input, date }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task-logs"] }),
+    }) => {
+      const existing = logFor(logs, input.task.id);
+      await setTaskLog({
+        taskId: input.task.id,
+        status: input.status,
+        note: input.note,
+        postponedTo: input.postponedTo,
+        date,
+        task: input.task,
+        existingPostponedTo: existing?.postponed_to ?? "",
+      });
+      if (request && (input.status === "done" || input.status === "postponed")) {
+        await notifyCounterpart({
+          requestId: request.id,
+          counterpartUserId: counterpart.data,
+          kind: `task-${input.status}`,
+          title:
+            input.status === "done"
+              ? `${input.task.title} marked complete`
+              : `${input.task.title} postponed`,
+          body: input.note,
+          link: "/shared",
+          dedupeKey: `task-${input.task.id}-${date}-${input.status}-${input.postponedTo ?? ""}`,
+        });
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["task-logs"] });
+      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
     onError: (error: Error) => toast.error(error.message),
   });
+
 
   if (!isLoading && today.length === 0) {
     return (

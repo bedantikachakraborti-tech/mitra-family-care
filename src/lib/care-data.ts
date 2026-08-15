@@ -2,7 +2,11 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
+  BUFFER_DEFAULT,
+  bufferEnd,
+  clampBuffer,
   emptyRequirements,
+  occurrenceDue,
   type CareRequest,
   type CareRequirements,
   type CareTask,
@@ -12,6 +16,7 @@ import {
   type TaskLog,
   type TaskStatus,
 } from "./care-types";
+
 
 function unwrap<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message);
@@ -197,11 +202,48 @@ export async function selectCaregiver(requestId: string, caregiverId: string) {
   unwrap(
     await supabase
       .from("care_requests")
-      .update({ selected_caregiver_id: caregiverId })
+      .update({
+        selected_caregiver_id: caregiverId,
+        match_status: "active",
+        unmatched_at: null,
+        unmatched_by: null,
+      })
       .eq("id", requestId)
       .select("id")
       .single(),
   );
+}
+
+/** Ends an active match. History stays readable; messaging stops. */
+export async function unmatchRequest(requestId: string) {
+  const { data: auth } = await supabase.auth.getUser();
+  unwrap(
+    await supabase
+      .from("care_requests")
+      .update({
+        match_status: "unmatched",
+        unmatched_at: new Date().toISOString(),
+        unmatched_by: auth.user?.id ?? null,
+      })
+      .eq("id", requestId)
+      .select("id")
+      .single(),
+  );
+}
+
+/** The other person in a match: caregiver's user id for a family, and vice versa. */
+export function counterpartQuery(requestId: string | undefined) {
+  return queryOptions({
+    queryKey: ["counterpart", requestId ?? "none"],
+    enabled: Boolean(requestId),
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase.rpc("request_counterpart", {
+        _request_id: requestId!,
+      });
+      if (error) throw new Error(error.message);
+      return (data as string | null) ?? null;
+    },
+  });
 }
 
 export async function ensurePlan(requestId: string): Promise<string> {
@@ -230,6 +272,7 @@ export async function addTasks(planId: string, tasks: DraftTask[], source: "ai" 
           time_of_day: t.timeOfDay,
           scheduled_time: t.scheduledTime,
           days: t.days,
+          buffer_minutes: clampBuffer(t.bufferMinutes ?? BUFFER_DEFAULT),
           source,
         })),
       )
@@ -238,7 +281,11 @@ export async function addTasks(planId: string, tasks: DraftTask[], source: "ai" 
 }
 
 export async function updateTask(taskId: string, patch: Partial<CareTask>) {
-  unwrap(await supabase.from("care_tasks").update(patch).eq("id", taskId).select("id").single());
+  const next: Partial<CareTask> = { ...patch };
+  if (typeof next.buffer_minutes === "number") {
+    next.buffer_minutes = clampBuffer(next.buffer_minutes);
+  }
+  unwrap(await supabase.from("care_tasks").update(next).eq("id", taskId).select("id").single());
 }
 
 export async function deleteTask(taskId: string) {
@@ -252,7 +299,22 @@ export async function setTaskLog(input: {
   status: TaskStatus;
   note: string;
   postponedTo?: string | undefined;
+  /** Used to record whether a completion landed inside the agreed window. */
+  task?: Pick<CareTask, "scheduled_time" | "buffer_minutes"> | undefined;
+  existingPostponedTo?: string | undefined;
 }) {
+  const now = new Date();
+  const due = input.task
+    ? occurrenceDue(
+        input.task,
+        { postponed_to: input.existingPostponedTo ?? "" },
+        input.date,
+      )
+    : null;
+  const end = input.task
+    ? bufferEnd(input.task, { postponed_to: input.existingPostponedTo ?? "" }, input.date)
+    : null;
+
   unwrap(
     await supabase
       .from("task_logs")
@@ -263,9 +325,11 @@ export async function setTaskLog(input: {
           status: input.status,
           note: input.note,
           // One canonical status record per task per day.
-          completed_at: input.status === "done" ? new Date().toISOString() : null,
+          completed_at: input.status === "done" ? now.toISOString() : null,
           postponed_to: input.status === "postponed" ? (input.postponedTo ?? "") : "",
-          updated_at: new Date().toISOString(),
+          scheduled_at: due ? due.toISOString() : null,
+          outside_buffer: input.status === "done" && end ? now.getTime() > end.getTime() : false,
+          updated_at: now.toISOString(),
         },
         { onConflict: "task_id,log_date" },
       )
@@ -284,3 +348,4 @@ export async function saveDaySummary(planId: string, date: string, content: stri
       .single(),
   );
 }
+

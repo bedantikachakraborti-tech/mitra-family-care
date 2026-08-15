@@ -52,7 +52,9 @@ export type DraftTask = {
   timeOfDay: TimeOfDay;
   scheduledTime: string;
   days: DayKey[];
+  bufferMinutes?: number;
 };
+
 
 export type TaskStatus = "pending" | "done" | "postponed" | "cancelled";
 
