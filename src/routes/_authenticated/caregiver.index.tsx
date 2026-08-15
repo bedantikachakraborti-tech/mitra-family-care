@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2, Circle, Clock, Loader2, NotebookPen, Timer } from "lucide-react";
 import { toast } from "sonner";
@@ -8,9 +8,11 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
-import { setTaskLog } from "@/lib/care-data";
+import { counterpartQuery, setTaskLog } from "@/lib/care-data";
+import { notifyCounterpart, useCareRealtime } from "@/lib/care-social";
 import { statusLabel, type CareTask, type TaskLog, type TaskStatus } from "@/lib/care-types";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
+
 
 export const Route = createFileRoute("/_authenticated/caregiver/")({
   head: () => ({
