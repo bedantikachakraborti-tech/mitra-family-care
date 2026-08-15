@@ -2,7 +2,11 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
+  BUFFER_DEFAULT,
+  bufferEnd,
+  clampBuffer,
   emptyRequirements,
+  occurrenceDue,
   type CareRequest,
   type CareRequirements,
   type CareTask,
@@ -12,6 +16,7 @@ import {
   type TaskLog,
   type TaskStatus,
 } from "./care-types";
+
 
 function unwrap<T>(result: { data: T | null; error: { message: string } | null }): T {
   if (result.error) throw new Error(result.error.message);
