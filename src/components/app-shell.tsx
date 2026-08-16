@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
 import { LanguageSelect } from "@/components/language-select";
+import { NotificationBell } from "@/components/notification-bell";
 import { initialsOf } from "@/lib/caregiver-profile";
 import { useMyProfile, useSignOut } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
@@ -25,6 +26,7 @@ type NavItem = { to: string; labelKey: string; icon: LucideIcon };
 const caregiverNav: NavItem[] = [
   { to: "/caregiver", labelKey: "nav.today", icon: Home },
   { to: "/care-plan", labelKey: "nav.carePlan", icon: CalendarHeart },
+  { to: "/chat", labelKey: "nav.messages", icon: MessageCircleHeart },
   { to: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
   { to: "/caregiver/profile", labelKey: "nav.profile", icon: UserRound },
 ];
@@ -33,6 +35,7 @@ const familyNav: NavItem[] = [
   { to: "/family", labelKey: "nav.home", icon: Home },
   { to: "/shared", labelKey: "nav.careCircle", icon: Users },
   { to: "/care-plan", labelKey: "nav.carePlan", icon: CalendarHeart },
+  { to: "/chat", labelKey: "nav.messages", icon: MessageCircleHeart },
   { to: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
 ];
 
@@ -93,6 +96,10 @@ export function AppShell({
         )}
 
         <div className="mt-auto space-y-3">
+          <div className="flex items-center gap-3 px-1">
+            <NotificationBell />
+            <span className="text-sm text-muted-foreground">Notifications</span>
+          </div>
           <LanguageSelect className="w-full justify-start" />
           <button
             type="button"
@@ -115,6 +122,7 @@ export function AppShell({
               <span className="truncate font-display text-lg font-semibold">Mitra</span>
             </Link>
             <div className="flex shrink-0 items-center gap-2">
+              <NotificationBell />
               <Link
                 to={profileTo}
                 className="grid h-10 w-10 place-items-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground"

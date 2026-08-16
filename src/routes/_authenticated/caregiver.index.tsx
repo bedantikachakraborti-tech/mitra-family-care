@@ -146,7 +146,7 @@ function CaregiverDashboard() {
                 log={logFor(logs, task.id)}
                 saving={save.isPending}
                 onSave={(status, note, postponedTo) =>
-                  save.mutate({ taskId: task.id, status, note, postponedTo })
+                  save.mutate({ task, status, note, postponedTo })
                 }
               />
             ))}
