@@ -94,7 +94,7 @@ export function NotificationBell({ className }: { className?: string }) {
                       >
                         {n.link ? (
                           <Link
-                            to={n.link}
+                            to={n.link as "/shared"}
                             className="min-w-0 flex-1"
                             onClick={() => {
                               if (!n.read_at) readOne.mutate(n.id);
