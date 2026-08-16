@@ -14,8 +14,11 @@ import { Pill, SoftCard, SectionTitle } from "@/components/ui-kit";
 import { structureCarePlan } from "@/lib/ai.functions";
 import { languageName, useLanguage } from "@/lib/i18n";
 import { addTasks, deleteTask, ensurePlan, updateTask } from "@/lib/care-data";
+import { useRole } from "@/lib/auth";
 
 import {
+  BUFFER_MAX,
+  BUFFER_MIN,
   DAYS,
   DAY_LABELS,
   TIME_OF_DAY,
@@ -45,6 +48,11 @@ export const Route = createFileRoute("/_authenticated/care-plan")({
   component: CarePlanPage,
 });
 
+const bufferChoices = Array.from(
+  { length: (BUFFER_MAX - BUFFER_MIN) / 10 + 1 },
+  (_, i) => BUFFER_MIN + i * 10,
+);
+
 const emptyDraft: DraftTask = {
   title: "",
   details: "",
@@ -55,6 +63,72 @@ const emptyDraft: DraftTask = {
 };
 
 function CarePlanPage() {
+  const role = useRole();
+  if (role === "caregiver") return <CaregiverPlanView />;
+  return <FamilyPlanEditor />;
+}
+
+/** Caregivers see the plan as a read-only rhythm; today's actions live in Today's care. */
+function CaregiverPlanView() {
+  const { request, tasks, caregiver } = useCareContext();
+
+  return (
+    <AppShell
+      role="caregiver"
+      title="Care plan"
+      subtitle={
+        request?.person_name
+          ? `${request.person_name}${caregiver ? " · shared with the family" : ""}`
+          : ""
+      }
+      action={
+        <Button asChild size="lg" className="h-12 rounded-full px-6">
+          <Link to="/caregiver">Today's care</Link>
+        </Button>
+      }
+    >
+      <SoftCard tone="sage">
+        <p className="text-sm">
+          The family keeps this plan up to date. Mark tasks complete or postponed from Today's care —
+          anything you need changed here, send a message and the family can update it.
+        </p>
+      </SoftCard>
+
+      <SoftCard>
+        <SectionTitle hint={`${tasks.length} tasks`}>The weekly rhythm</SectionTitle>
+        {tasks.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            There's no plan yet. It will appear here once the family confirms one.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {tasks.map((task) => (
+              <li key={task.id} className="rounded-2xl border border-border p-4">
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" aria-hidden />
+                  <span className="tabular-nums">{task.scheduled_time || task.time_of_day}</span>
+                </p>
+                <p className="mt-1 font-medium">{task.title}</p>
+                {task.details && (
+                  <p className="mt-1 text-sm text-muted-foreground">{task.details}</p>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Pill tone="sage">{task.category}</Pill>
+                  <Pill tone="sky">{task.buffer_minutes} min window</Pill>
+                  {task.days.map((d) => (
+                    <Pill key={d}>{DAY_LABELS[d as DayKey] ?? d}</Pill>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </SoftCard>
+    </AppShell>
+  );
+}
+
+function FamilyPlanEditor() {
   const queryClient = useQueryClient();
   const { request, planId, tasks, caregiver } = useCareContext();
   const [description, setDescription] = useState("");
@@ -312,6 +386,26 @@ function CarePlanPage() {
                     </div>
                   </div>
                   <div className="flex shrink-0 flex-col gap-2">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Completion window
+                      <select
+                        value={task.buffer_minutes}
+                        onChange={(event) =>
+                          editSaved.mutate({
+                            id: task.id,
+                            patch: { buffer_minutes: Number(event.target.value) },
+                          })
+                        }
+                        className="mt-1 h-11 w-32 rounded-2xl border border-border bg-background px-3 text-sm"
+                        aria-label={`Completion window for ${task.title}`}
+                      >
+                        {bufferChoices.map((m) => (
+                          <option key={m} value={m}>
+                            {m} min
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                     <Input
                       type="time"
                       value={task.scheduled_time}
