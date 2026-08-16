@@ -5,6 +5,8 @@ import { CheckCircle2, Timer } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
+import { ReviewPanel } from "@/components/review-panel";
+import { useRole } from "@/lib/auth";
 import { summaryQuery } from "@/lib/care-data";
 import { DAY_LABELS, statusLabel, type DayKey } from "@/lib/care-types";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
@@ -26,13 +28,14 @@ export const Route = createFileRoute("/_authenticated/shared")({
 });
 
 function SharedDashboard() {
+  const role = useRole();
   const { request, caregiver, tasks, logs, planId, date } = useCareContext();
   const summary = useQuery(summaryQuery(planId ?? undefined, date));
 
   // The shared workspace only exists once a family and a caregiver are matched.
   if (!request || !request.selected_caregiver_id || !caregiver) {
     return (
-      <AppShell role="family" title="Care circle">
+      <AppShell role={role} title="Care circle">
         <SoftCard>
           <p className="text-sm text-muted-foreground">
             This shared workspace opens once a family and a caregiver are matched. Choose a
@@ -178,6 +181,7 @@ function SharedDashboard() {
           </ul>
         )}
       </SoftCard>
+      <ReviewPanel requestId={request.id} />
     </AppShell>
   );
 }

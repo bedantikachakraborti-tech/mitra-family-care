@@ -31,7 +31,8 @@ const en: Dict = {
   "brand.tagline": "Care is better together.",
 
   "nav.today": "Today's Care",
-  "nav.carePlan": "Care Plan",
+  "nav.messages": "Messages",
+    "nav.carePlan": "Care Plan",
   "nav.assistant": "Assistant",
   "nav.profile": "Profile",
   "nav.home": "Home",
@@ -109,7 +110,8 @@ const hi: Dict = {
   "brand.tagline": "देखभाल साथ मिलकर बेहतर होती है।",
 
   "nav.today": "आज की देखभाल",
-  "nav.carePlan": "देखभाल योजना",
+  "nav.messages": "Messages",
+    "nav.carePlan": "देखभाल योजना",
   "nav.assistant": "सहायक",
   "nav.profile": "प्रोफ़ाइल",
   "nav.home": "होम",
@@ -187,7 +189,8 @@ const bn: Dict = {
   "brand.tagline": "একসাথে যত্ন নেওয়া সহজ।",
 
   "nav.today": "আজকের যত্ন",
-  "nav.carePlan": "যত্ন পরিকল্পনা",
+  "nav.messages": "Messages",
+    "nav.carePlan": "যত্ন পরিকল্পনা",
   "nav.assistant": "সহায়ক",
   "nav.profile": "প্রোফাইল",
   "nav.home": "হোম",
@@ -265,7 +268,8 @@ const ta: Dict = {
   "brand.tagline": "ஒன்றாக இருந்தால் பராமரிப்பு எளிது.",
 
   "nav.today": "இன்றைய பராமரிப்பு",
-  "nav.carePlan": "பராமரிப்புத் திட்டம்",
+  "nav.messages": "Messages",
+    "nav.carePlan": "பராமரிப்புத் திட்டம்",
   "nav.assistant": "உதவியாளர்",
   "nav.profile": "சுயவிவரம்",
   "nav.home": "முகப்பு",
