@@ -85,7 +85,9 @@ function CareFamilyPage() {
 
 function FamilyPlanEditor() {
   const queryClient = useQueryClient();
-  const { request, planId, tasks, logs, caregiver } = useCareContext();
+  const { request, planId, tasks: allTasks, logs, caregiver } = useCareContext();
+  // Retired definitions stay in the database for history but leave the editor.
+  const tasks = allTasks.filter((t) => t.is_active);
   const [description, setDescription] = useState("");
   const [drafts, setDrafts] = useState<DraftTask[] | null>(null);
   const { lang: uiLang } = useLanguage();
