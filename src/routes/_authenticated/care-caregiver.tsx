@@ -33,7 +33,7 @@ function CareCaregiverPage() {
   const profile = useMyProfile();
 
   if (profile.isLoading) return <LoadingShell />;
-  if (profile.data && profile.data.role !== "caregiver") return <Navigate to="/care-family" />;
+  if (profile.data?.role !== "caregiver") return <Navigate to="/care-family" />;
 
   return <CaregiverChecklist />;
 }
