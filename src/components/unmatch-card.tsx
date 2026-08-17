@@ -32,10 +32,11 @@ export function UnmatchCard({
         counterpartUserId,
         kind: "unmatched",
         title: "Your care connection has ended",
+        // The recipient is the other side of the match.
         body:
           role === "family"
-            ? `Your care connection with ${otherName} has ended.`
-            : `Your care connection with ${otherName} has ended. You can choose a new caregiver from your matches.`,
+            ? "Your care connection has ended."
+            : "Your care connection has ended. You can choose a new caregiver from your matches.",
         link: role === "family" ? "/caregiver" : "/family/matches",
         // One notification per unmatch event, so a refresh never duplicates it.
         dedupeKey: `unmatched:${requestId}`,
