@@ -513,6 +513,7 @@ export type Database = {
     }
     Functions: {
       can_access_request: { Args: { _request_id: string }; Returns: boolean }
+      end_care_match: { Args: { _request_id: string }; Returns: string }
       has_active_match: { Args: { _request_id: string }; Returns: boolean }
       my_caregiver_id: { Args: never; Returns: string }
       owns_request: { Args: { _request_id: string }; Returns: boolean }
