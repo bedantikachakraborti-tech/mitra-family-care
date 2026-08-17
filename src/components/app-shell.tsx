@@ -25,7 +25,7 @@ type NavItem = { to: string; labelKey: string; icon: LucideIcon };
 
 const caregiverNav: NavItem[] = [
   { to: "/caregiver", labelKey: "nav.today", icon: Home },
-  { to: "/care-plan", labelKey: "nav.carePlan", icon: CalendarHeart },
+  { to: "/care-caregiver", labelKey: "nav.carePlan", icon: CalendarHeart },
   { to: "/chat", labelKey: "nav.messages", icon: MessageCircleHeart },
   { to: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
   { to: "/caregiver/profile", labelKey: "nav.profile", icon: UserRound },
@@ -34,7 +34,7 @@ const caregiverNav: NavItem[] = [
 const familyNav: NavItem[] = [
   { to: "/family", labelKey: "nav.home", icon: Home },
   { to: "/shared", labelKey: "nav.careCircle", icon: Users },
-  { to: "/care-plan", labelKey: "nav.carePlan", icon: CalendarHeart },
+  { to: "/care-family", labelKey: "nav.carePlan", icon: CalendarHeart },
   { to: "/chat", labelKey: "nav.messages", icon: MessageCircleHeart },
   { to: "/assistant", labelKey: "nav.assistant", icon: Sparkles },
 ];

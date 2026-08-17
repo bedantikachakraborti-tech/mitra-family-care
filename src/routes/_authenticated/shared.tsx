@@ -88,7 +88,7 @@ function SharedDashboard() {
         {today.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No tasks scheduled for today yet.{" "}
-            <Link to="/care-plan" className="underline">
+            <Link to="/care-family" className="underline">
               Build the care plan
             </Link>
             .
