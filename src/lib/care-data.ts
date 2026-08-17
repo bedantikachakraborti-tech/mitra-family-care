@@ -215,21 +215,15 @@ export async function selectCaregiver(requestId: string, caregiverId: string) {
   );
 }
 
-/** Ends an active match. History stays readable; messaging stops. */
-export async function unmatchRequest(requestId: string) {
-  const { data: auth } = await supabase.auth.getUser();
-  unwrap(
-    await supabase
-      .from("care_requests")
-      .update({
-        match_status: "unmatched",
-        unmatched_at: new Date().toISOString(),
-        unmatched_by: auth.user?.id ?? null,
-      })
-      .eq("id", requestId)
-      .select("id")
-      .single(),
-  );
+/**
+ * Ends an active match from either side. History (tasks, logs, messages,
+ * reviews) stays exactly where it is; only the relationship state changes.
+ * Returns the other person's user id so the caller can notify them.
+ */
+export async function unmatchRequest(requestId: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc("end_care_match", { _request_id: requestId });
+  if (error) throw new Error(error.message);
+  return (data as string | null) ?? null;
 }
 
 /** The other person in a match: caregiver's user id for a family, and vice versa. */

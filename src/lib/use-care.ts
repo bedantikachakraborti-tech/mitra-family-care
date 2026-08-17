@@ -17,14 +17,25 @@ export function useCareContext(date = todayKey()) {
   const tasks = useQuery(tasksQuery(plan.data?.id));
   const logs = useQuery(logsQuery(plan.data?.id, date));
 
-  const caregiver =
+  // The caregiver row on the request, whatever the state of the relationship.
+  const matchedCaregiver =
     caregivers.data?.find((c) => c.id === request.data?.selected_caregiver_id) ?? null;
+  // A deleted caregiver account is detached from its profile (user_id === null),
+  // so it can never be a current care connection again.
+  const matchActive =
+    request.data?.match_status === "active" &&
+    Boolean(request.data?.selected_caregiver_id) &&
+    Boolean(matchedCaregiver?.user_id);
+  // `caregiver` means "current care connection" everywhere in the app.
+  const caregiver = matchActive ? matchedCaregiver : null;
 
   return {
     date,
     request: request.data ?? null,
     caregivers: caregivers.data ?? [],
     caregiver,
+    matchedCaregiver,
+    matchActive,
     planId: plan.data?.id ?? null,
     tasks: tasks.data ?? [],
     logs: logs.data ?? [],

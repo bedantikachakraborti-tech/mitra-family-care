@@ -38,7 +38,7 @@ function ChatPage() {
   const role = useRole();
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { request, caregiver } = useCareContext();
+  const { request, matchedCaregiver: caregiver } = useCareContext();
   const requestId = request?.id;
   const active = request?.match_status === "active";
 
