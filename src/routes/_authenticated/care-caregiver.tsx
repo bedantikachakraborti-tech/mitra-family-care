@@ -129,8 +129,9 @@ function CaregiverChecklist() {
       ) : today.length === 0 ? (
         <SoftCard>
           <p className="text-sm text-muted-foreground">
-            There's nothing scheduled for today. Once the family confirms a plan, today's tasks will
-            appear here.
+            {tasks.length === 0
+              ? "The family hasn't confirmed a plan yet. Their tasks will appear here once they do."
+              : "Nothing in the plan falls on today."}
           </p>
         </SoftCard>
       ) : (
