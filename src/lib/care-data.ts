@@ -271,7 +271,8 @@ export async function addTasks(planId: string, tasks: DraftTask[], source: "ai" 
           category: t.category,
           time_of_day: t.timeOfDay,
           scheduled_time: t.scheduledTime,
-          days: t.days,
+          // No days chosen means the routine happens every day.
+          days: t.days.length > 0 ? t.days : [...DAYS],
           buffer_minutes: clampBuffer(t.bufferMinutes ?? BUFFER_DEFAULT),
           source,
         })),
