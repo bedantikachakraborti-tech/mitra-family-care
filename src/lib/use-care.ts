@@ -35,7 +35,8 @@ export function useCareContext(date = todayKey()) {
 export function tasksForDay(tasks: CareTask[], date = new Date()): CareTask[] {
   const key = dayKeyOf(date);
   return tasks
-    .filter((t) => t.is_active && t.days.includes(key))
+    // A task with no days recorded is treated as a daily routine.
+    .filter((t) => t.is_active && (t.days.length === 0 || t.days.includes(key)))
     .sort((a, b) => (a.scheduled_time || "99:99").localeCompare(b.scheduled_time || "99:99"));
 }
 

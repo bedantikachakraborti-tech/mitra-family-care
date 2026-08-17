@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BUFFER_DEFAULT,
+  DAYS,
   bufferEnd,
   clampBuffer,
   emptyRequirements,
@@ -271,7 +272,8 @@ export async function addTasks(planId: string, tasks: DraftTask[], source: "ai" 
           category: t.category,
           time_of_day: t.timeOfDay,
           scheduled_time: t.scheduledTime,
-          days: t.days,
+          // No days chosen means the routine happens every day.
+          days: t.days.length > 0 ? t.days : [...DAYS],
           buffer_minutes: clampBuffer(t.bufferMinutes ?? BUFFER_DEFAULT),
           source,
         })),
@@ -288,9 +290,27 @@ export async function updateTask(taskId: string, patch: Partial<CareTask>) {
   unwrap(await supabase.from("care_tasks").update(next).eq("id", taskId).select("id").single());
 }
 
+/**
+ * Removes a task from the plan. If the task already has history, the definition is
+ * retired instead of destroyed so past logs stay readable.
+ */
 export async function deleteTask(taskId: string) {
-  const { error } = await supabase.from("care_tasks").delete().eq("id", taskId);
-  if (error) throw new Error(error.message);
+  const logs = unwrap(await supabase.from("task_logs").select("id").eq("task_id", taskId).limit(1));
+  if ((logs ?? []).length > 0) {
+    const retired = unwrap(
+      await supabase.from("care_tasks").update({ is_active: false }).eq("id", taskId).select("id"),
+    ) as { id: string }[] | null;
+    if (!retired || retired.length === 0) {
+      throw new Error("You don't have permission to change this task.");
+    }
+    return;
+  }
+  const removed = unwrap(
+    await supabase.from("care_tasks").delete().eq("id", taskId).select("id"),
+  ) as { id: string }[] | null;
+  if (!removed || removed.length === 0) {
+    throw new Error("You don't have permission to remove this task.");
+  }
 }
 
 export async function setTaskLog(input: {

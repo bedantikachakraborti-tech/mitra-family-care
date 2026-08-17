@@ -33,7 +33,7 @@ function CareCaregiverPage() {
   const profile = useMyProfile();
 
   if (profile.isLoading) return <LoadingShell />;
-  if (profile.data && profile.data.role !== "caregiver") return <Navigate to="/care-family" />;
+  if (profile.data?.role !== "caregiver") return <Navigate to="/care-family" />;
 
   return <CaregiverChecklist />;
 }
@@ -51,13 +51,34 @@ function LoadingShell() {
 }
 
 function CaregiverChecklist() {
-  const { request, tasks, logs, date, isLoading } = useCareContext();
+  const { request, tasks: allTasks, logs, date, isLoading } = useCareContext();
   useCareRealtime(request?.id);
 
+  const tasks = allTasks.filter((t) => t.is_active);
+  const hasActiveMatch = Boolean(
+    request && request.match_status === "active" && request.selected_caregiver_id,
+  );
   const today = tasksForDay(tasks);
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
   const save = useTaskSave({ request, logs, date });
+
+  if (!isLoading && !hasActiveMatch) {
+    return (
+      <AppShell role="caregiver" title="Care checklist">
+        <SoftCard>
+          <h2 className="text-lg font-semibold">No active care connection yet</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            You aren't part of an active care circle right now, so there's no checklist to show.
+            Once a family matches with you, their confirmed plan will appear here.
+          </p>
+          <Button asChild size="lg" variant="outline" className="mt-5 h-12 rounded-full">
+            <Link to="/caregiver/profile">Review your profile</Link>
+          </Button>
+        </SoftCard>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell
@@ -108,8 +129,9 @@ function CaregiverChecklist() {
       ) : today.length === 0 ? (
         <SoftCard>
           <p className="text-sm text-muted-foreground">
-            There's nothing scheduled for today. Once the family confirms a plan, today's tasks will
-            appear here.
+            {tasks.length === 0
+              ? "The family hasn't confirmed a plan yet. Their tasks will appear here once they do."
+              : "Nothing in the plan falls on today."}
           </p>
         </SoftCard>
       ) : (
