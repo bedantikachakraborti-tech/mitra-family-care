@@ -193,15 +193,19 @@ export async function saveReview(input: {
 
 /* -------------------------------- realtime -------------------------------- */
 
+let realtimeChannelSequence = 0;
+
 /** Keeps messages and notifications fresh while a screen is open. */
 export function useCareRealtime(requestId: string | null | undefined) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Unique per hook instance: reusing a name returns an already-subscribed
-    // channel, and `.on()` after `subscribe()` throws.
+    // Every effect lifetime must own a fresh channel. Supabase returns an
+    // existing channel for a reused topic, where adding callbacks after it
+    // subscribed throws and can crash the route (especially in Strict Mode).
+    realtimeChannelSequence += 1;
     const channel = supabase.channel(
-      `mitra-live-${requestId ?? "me"}-${Math.random().toString(36).slice(2)}`,
+      `mitra-live-${requestId ?? "me"}-${Date.now()}-${realtimeChannelSequence}`,
     );
 
     if (requestId) {
@@ -222,6 +226,11 @@ export function useCareRealtime(requestId: string | null | undefined) {
     );
 
     channel.subscribe();
-    return () => void supabase.removeChannel(channel);
+
+    return () => {
+      // Remove exactly the channel created by this effect. The unique topic
+      // means a remount never races cleanup by retrieving this same instance.
+      void supabase.removeChannel(channel);
+    };
   }, [requestId, queryClient]);
 }
