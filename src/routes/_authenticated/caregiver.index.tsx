@@ -1,18 +1,12 @@
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CheckCircle2, Circle, Clock, Loader2, NotebookPen, Timer } from "lucide-react";
-import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
-import { counterpartQuery, setTaskLog } from "@/lib/care-data";
-import { notifyCounterpart, useCareRealtime } from "@/lib/care-social";
-import { statusLabel, type CareTask, type TaskLog, type TaskStatus } from "@/lib/care-types";
+import { SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
+import { TaskRow, useTaskSave } from "@/components/task-checklist";
+import { useCareRealtime } from "@/lib/care-social";
 import { logFor, tasksForDay, useCareContext } from "@/lib/use-care";
-
 
 export const Route = createFileRoute("/_authenticated/caregiver/")({
   head: () => ({
@@ -30,55 +24,15 @@ export const Route = createFileRoute("/_authenticated/caregiver/")({
 });
 
 function CaregiverDashboard() {
-  const queryClient = useQueryClient();
   const { request, caregiver, tasks, logs, date, isLoading } = useCareContext();
 
   const today = tasksForDay(tasks);
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
 
-  const counterpart = useQuery(counterpartQuery(request?.id));
   useCareRealtime(request?.id);
 
-  const save = useMutation({
-    mutationFn: async (input: {
-      task: CareTask;
-      status: TaskStatus;
-      note: string;
-      postponedTo?: string | undefined;
-    }) => {
-      const existing = logFor(logs, input.task.id);
-      await setTaskLog({
-        taskId: input.task.id,
-        status: input.status,
-        note: input.note,
-        postponedTo: input.postponedTo,
-        date,
-        task: input.task,
-        existingPostponedTo: existing?.postponed_to ?? "",
-      });
-      if (request && (input.status === "done" || input.status === "postponed")) {
-        await notifyCounterpart({
-          requestId: request.id,
-          counterpartUserId: counterpart.data,
-          kind: `task-${input.status}`,
-          title:
-            input.status === "done"
-              ? `${input.task.title} marked complete`
-              : `${input.task.title} postponed`,
-          body: input.note,
-          link: "/shared",
-          dedupeKey: `task-${input.task.id}-${date}-${input.status}-${input.postponedTo ?? ""}`,
-        });
-      }
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["task-logs"] });
-      void queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
+  const save = useTaskSave({ request, logs, date });
 
   if (!isLoading && today.length === 0) {
     return (
@@ -93,7 +47,7 @@ function CaregiverDashboard() {
             appear here.
           </p>
           <Button asChild size="lg" variant="outline" className="mt-5 h-12 rounded-full">
-            <Link to="/care-plan">See the care plan</Link>
+            <Link to="/care-caregiver">See the care plan</Link>
           </Button>
         </SoftCard>
       </AppShell>
@@ -167,145 +121,5 @@ function CaregiverDashboard() {
         </SoftCard>
       ) : null}
     </AppShell>
-  );
-}
-
-function TaskRow({
-  task,
-  log,
-  saving,
-  onSave,
-}: {
-  task: CareTask;
-  log: TaskLog | undefined;
-  saving: boolean;
-  onSave: (status: TaskStatus, note: string, postponedTo?: string) => void;
-}) {
-  const [openNote, setOpenNote] = useState(false);
-  const [openPostpone, setOpenPostpone] = useState(false);
-  const [newTime, setNewTime] = useState(log?.postponed_to || task.scheduled_time || "");
-  const [note, setNote] = useState(log?.note ?? "");
-  const status = log?.status ?? "pending";
-
-  return (
-    <li className="rounded-2xl border border-border p-4">
-      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-secondary-foreground">
-          {status === "done" ? (
-            <CheckCircle2 className="h-4.5 w-4.5" aria-hidden />
-          ) : status === "postponed" ? (
-            <Timer className="h-4.5 w-4.5" aria-hidden />
-          ) : (
-            <Circle className="h-4.5 w-4.5" aria-hidden />
-          )}
-        </span>
-        <div className="min-w-0">
-          <p className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground tabular-nums">
-              <Clock className="mr-1 inline h-3.5 w-3.5" aria-hidden />
-              {task.scheduled_time || task.time_of_day}
-            </span>
-            <span
-              className={`truncate font-medium ${status === "done" ? "text-muted-foreground line-through" : ""}`}
-            >
-              {task.title}
-            </span>
-          </p>
-          {task.details && (
-            <p className="mt-0.5 text-sm text-muted-foreground">{task.details}</p>
-          )}
-          <p className="mt-2 text-xs text-muted-foreground">
-            {statusLabel(log)}
-          </p>
-          {log?.note && !openNote && (
-            <p className="mt-2 rounded-2xl bg-secondary px-3 py-2 text-sm">{log.note}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button
-          size="lg"
-          variant={status === "done" ? "default" : "outline"}
-          className="h-11 rounded-full"
-          disabled={saving}
-          onClick={() => onSave("done", note)}
-        >
-          Complete
-        </Button>
-        <Button
-          size="lg"
-          variant={status === "postponed" ? "default" : "outline"}
-          className="h-11 rounded-full"
-          disabled={saving}
-          onClick={() => setOpenPostpone((v) => !v)}
-        >
-          Postpone
-        </Button>
-        <Button
-          size="lg"
-          variant="ghost"
-          className="h-11 rounded-full"
-          onClick={() => setOpenNote((v) => !v)}
-        >
-          <NotebookPen className="mr-2 h-4 w-4" aria-hidden />
-          {log?.note ? "Edit note" : "Add note"}
-        </Button>
-        {task.category && <Pill tone="sky">{task.category}</Pill>}
-      </div>
-
-      {openPostpone && (
-        <div className="mt-3 flex flex-wrap items-end gap-2">
-          <div>
-            <label htmlFor={`time-${task.id}`} className="text-xs font-semibold">
-              New time
-            </label>
-            <input
-              id={`time-${task.id}`}
-              type="time"
-              value={newTime}
-              onChange={(event) => setNewTime(event.target.value)}
-              className="mt-1 block h-11 rounded-2xl border border-border bg-card px-3 text-sm"
-            />
-          </div>
-          <Button
-            size="lg"
-            className="h-11 rounded-full px-5"
-            disabled={saving}
-            onClick={() => {
-              onSave("postponed", note, newTime);
-              setOpenPostpone(false);
-            }}
-          >
-            Save new time
-          </Button>
-        </div>
-      )}
-
-      {openNote && (
-        <div className="mt-3">
-          <Textarea
-            rows={2}
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="How did it go? Anything the family should know?"
-            className="rounded-2xl"
-          />
-          <div className="mt-2 flex justify-end">
-            <Button
-              size="lg"
-              className="h-11 rounded-full px-5"
-              disabled={saving}
-              onClick={() => {
-                onSave(status, note);
-                setOpenNote(false);
-              }}
-            >
-              Save note
-            </Button>
-          </div>
-        </div>
-      )}
-    </li>
   );
 }

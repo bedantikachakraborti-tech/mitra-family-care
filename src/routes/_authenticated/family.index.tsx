@@ -100,7 +100,7 @@ function FamilyDashboard() {
         {today.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No tasks scheduled today.{" "}
-            <Link to="/care-plan" className="text-primary">
+            <Link to="/care-family" className="text-primary">
               Build the care plan
             </Link>
             .
@@ -145,7 +145,7 @@ function FamilyDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <QuickLink
-          to="/care-plan"
+          to="/care-family"
           icon={CalendarHeart}
           title="Care plan"
           text="The daily rhythm everyone follows."
