@@ -51,9 +51,13 @@ function LoadingShell() {
 }
 
 function CaregiverChecklist() {
-  const { request, tasks, logs, date, isLoading } = useCareContext();
+  const { request, tasks: allTasks, logs, date, isLoading } = useCareContext();
   useCareRealtime(request?.id);
 
+  const tasks = allTasks.filter((t) => t.is_active);
+  const hasActiveMatch = Boolean(
+    request && request.match_status === "active" && request.selected_caregiver_id,
+  );
   const today = tasksForDay(tasks);
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
