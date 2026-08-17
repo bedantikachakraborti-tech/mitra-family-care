@@ -198,7 +198,11 @@ export function useCareRealtime(requestId: string | null | undefined) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const channel = supabase.channel(`mitra-live-${requestId ?? "me"}`);
+    // Unique per hook instance: reusing a name returns an already-subscribed
+    // channel, and `.on()` after `subscribe()` throws.
+    const channel = supabase.channel(
+      `mitra-live-${requestId ?? "me"}-${Math.random().toString(36).slice(2)}`,
+    );
 
     if (requestId) {
       channel.on(
