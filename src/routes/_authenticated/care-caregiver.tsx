@@ -63,6 +63,23 @@ function CaregiverChecklist() {
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
   const save = useTaskSave({ request, logs, date });
 
+  if (!isLoading && !hasActiveMatch) {
+    return (
+      <AppShell role="caregiver" title="Care checklist">
+        <SoftCard>
+          <h2 className="text-lg font-semibold">No active care connection yet</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            You aren't part of an active care circle right now, so there's no checklist to show.
+            Once a family matches with you, their confirmed plan will appear here.
+          </p>
+          <Button asChild size="lg" variant="outline" className="mt-5 h-12 rounded-full">
+            <Link to="/caregiver/profile">Review your profile</Link>
+          </Button>
+        </SoftCard>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
       role="caregiver"
