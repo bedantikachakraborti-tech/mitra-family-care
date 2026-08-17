@@ -32,23 +32,32 @@ function SharedDashboard() {
   const { request, caregiver, tasks, logs, planId, date } = useCareContext();
   const summary = useQuery(summaryQuery(planId ?? undefined, date));
 
-  // The shared workspace only exists once a family and a caregiver are matched.
-  if (!request || !request.selected_caregiver_id || !caregiver) {
+  // The shared workspace only exists while a family and a caregiver are matched.
+  if (!request || !caregiver) {
+    const ended = Boolean(request && request.selected_caregiver_id);
     return (
       <AppShell role={role} title="Care circle">
         <SoftCard>
-          <p className="text-sm text-muted-foreground">
-            This shared workspace opens once a family and a caregiver are matched. Choose a
-            caregiver and you'll both see the same plan, progress and notes here.
+          <h2 className="text-lg font-semibold">
+            {ended ? "Your care connection has ended." : "No active care connection yet"}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {ended
+              ? role === "family"
+                ? "Past tasks, notes and messages are kept as historical care records. Choose a new caregiver to start a new care circle."
+                : "Past tasks, notes and messages are kept as historical care records."
+              : "This shared workspace opens once a family and a caregiver are matched. You'll both see the same plan, progress and notes here."}
           </p>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="h-13 rounded-full px-6">
-              <Link to="/family/matches">See suggested caregivers</Link>
-            </Button>
-            <Button asChild size="lg" variant="ghost" className="h-13 rounded-full">
-              <Link to="/family/request">Start a care request</Link>
-            </Button>
-          </div>
+          {role === "family" && (
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="h-13 rounded-full px-6">
+                <Link to="/family/matches">Choose a new caregiver</Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="h-13 rounded-full">
+                <Link to="/family/request">Start a care request</Link>
+              </Button>
+            </div>
+          )}
         </SoftCard>
       </AppShell>
     );
