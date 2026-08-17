@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RoleRouteImport } from './routes/role'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
+import { Route as AuthenticatedCareCaregiverRouteImport } from './routes/_authenticated/care-caregiver'
 import { Route as AuthenticatedCarePlanRouteImport } from './routes/_authenticated/care-plan'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedSharedRouteImport } from './routes/_authenticated/shared'
@@ -56,6 +57,12 @@ const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
   path: '/assistant',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCareCaregiverRoute =
+  AuthenticatedCareCaregiverRouteImport.update({
+    id: '/care-caregiver',
+    path: '/care-caregiver',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCarePlanRoute = AuthenticatedCarePlanRouteImport.update({
   id: '/care-plan',
   path: '/care-plan',
@@ -126,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/role': typeof RoleRoute
   '/assistant': typeof AuthenticatedAssistantRoute
+  '/care-caregiver': typeof AuthenticatedCareCaregiverRoute
   '/care-plan': typeof AuthenticatedCarePlanRoute
   '/chat': typeof AuthenticatedChatRoute
   '/shared': typeof AuthenticatedSharedRoute
@@ -144,6 +152,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/role': typeof RoleRoute
   '/assistant': typeof AuthenticatedAssistantRoute
+  '/care-caregiver': typeof AuthenticatedCareCaregiverRoute
   '/care-plan': typeof AuthenticatedCarePlanRoute
   '/chat': typeof AuthenticatedChatRoute
   '/shared': typeof AuthenticatedSharedRoute
@@ -164,6 +173,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/role': typeof RoleRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
+  '/_authenticated/care-caregiver': typeof AuthenticatedCareCaregiverRoute
   '/_authenticated/care-plan': typeof AuthenticatedCarePlanRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/shared': typeof AuthenticatedSharedRoute
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/role'
     | '/assistant'
+    | '/care-caregiver'
     | '/care-plan'
     | '/chat'
     | '/shared'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/role'
     | '/assistant'
+    | '/care-caregiver'
     | '/care-plan'
     | '/chat'
     | '/shared'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/role'
     | '/_authenticated/assistant'
+    | '/_authenticated/care-caregiver'
     | '/_authenticated/care-plan'
     | '/_authenticated/chat'
     | '/_authenticated/shared'
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/assistant'
       fullPath: '/assistant'
       preLoaderRoute: typeof AuthenticatedAssistantRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/care-caregiver': {
+      id: '/_authenticated/care-caregiver'
+      path: '/care-caregiver'
+      fullPath: '/care-caregiver'
+      preLoaderRoute: typeof AuthenticatedCareCaregiverRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/care-plan': {
@@ -368,6 +388,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
+  AuthenticatedCareCaregiverRoute: typeof AuthenticatedCareCaregiverRoute
   AuthenticatedCarePlanRoute: typeof AuthenticatedCarePlanRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedSharedRoute: typeof AuthenticatedSharedRoute
@@ -383,6 +404,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
+  AuthenticatedCareCaregiverRoute: AuthenticatedCareCaregiverRoute,
   AuthenticatedCarePlanRoute: AuthenticatedCarePlanRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedSharedRoute: AuthenticatedSharedRoute,
