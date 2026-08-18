@@ -22,6 +22,63 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       if (error) throw new Error(`${label}: ${error.message}`);
     };
 
+    /** In-app notification; the unique dedupe key makes retries harmless. */
+    const notify = async (input: {
+      userId: string | null | undefined;
+      requestId: string;
+      title: string;
+      body: string;
+      link: string;
+      dedupeKey: string;
+    }) => {
+      if (!input.userId) return;
+      const { error } = await supabaseAdmin.from("notifications").insert({
+        user_id: input.userId,
+        request_id: input.requestId,
+        kind: "unmatched",
+        title: input.title,
+        body: input.body,
+        link: input.link,
+        dedupe_key: input.dedupeKey,
+      });
+      if (error && !error.message.includes("duplicate")) {
+        throw new Error(`Notifying your care circle: ${error.message}`);
+      }
+    };
+
+    /** Ends an active match and tells the other side, before anything is removed. */
+    const endMatch = async (
+      request: { id: string },
+      counterpartUserId: string | null | undefined,
+      side: "family" | "caregiver",
+    ) => {
+      fail(
+        "Ending the care connection",
+        (
+          await supabaseAdmin
+            .from("care_requests")
+            .update({
+              match_status: "unmatched",
+              unmatched_at: new Date().toISOString(),
+              unmatched_by: userId,
+            })
+            .eq("id", request.id)
+        ).error,
+      );
+      await notify({
+        userId: counterpartUserId,
+        requestId: request.id,
+        title: "Your care connection has ended",
+        body:
+          side === "family"
+            ? "Your care connection has ended. You can choose a new caregiver from your matches."
+            : "Your care connection has ended.",
+        link: side === "family" ? "/family/matches" : "/caregiver",
+        dedupeKey: `unmatched:${request.id}`,
+      });
+    };
+
+
     // 1. Caregiver profile — anonymise, never delete shared history.
     const { data: caregivers, error: caregiverError } = await supabaseAdmin
       .from("caregivers")
@@ -30,6 +87,17 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     fail("Reading caregiver profile", caregiverError);
 
     for (const caregiver of caregivers ?? []) {
+      // End any active connection and tell the family before unlinking.
+      const { data: activeRequests, error: activeError } = await supabaseAdmin
+        .from("care_requests")
+        .select("id, family_user_id")
+        .eq("selected_caregiver_id", caregiver.id)
+        .eq("match_status", "active");
+      fail("Reading active care connections", activeError);
+      for (const request of activeRequests ?? []) {
+        await endMatch(request, request.family_user_id, "family");
+      }
+
       const { error } = await supabaseAdmin
         .from("caregivers")
         .update({
@@ -56,9 +124,22 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // 2. Family-owned data — delete children before parents.
     const { data: requests, error: requestError } = await supabaseAdmin
       .from("care_requests")
-      .select("id")
+      .select("id, match_status, selected_caregiver_id")
       .eq("family_user_id", userId);
     fail("Reading care requests", requestError);
+
+    // End active connections and notify the matched caregiver first.
+    for (const request of requests ?? []) {
+      if (request.match_status !== "active" || !request.selected_caregiver_id) continue;
+      const { data: matched, error: matchedError } = await supabaseAdmin
+        .from("caregivers")
+        .select("user_id")
+        .eq("id", request.selected_caregiver_id)
+        .maybeSingle();
+      fail("Reading the matched caregiver", matchedError);
+      await endMatch(request, matched?.user_id, "caregiver");
+    }
+
 
     const requestIds = (requests ?? []).map((r) => r.id);
     if (requestIds.length > 0) {

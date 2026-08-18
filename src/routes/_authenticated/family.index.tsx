@@ -25,7 +25,9 @@ export const Route = createFileRoute("/_authenticated/family/")({
 
 function FamilyDashboard() {
   const profile = useMyProfile();
-  const { request, caregiver, tasks, logs, isLoading } = useCareContext();
+  const { request, caregiver, matchActive, tasks, logs, isLoading } = useCareContext();
+  // A former caregiver is history, never the current connection.
+  const connectionEnded = Boolean(request?.selected_caregiver_id) && !matchActive;
   const today = tasksForDay(tasks);
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
@@ -50,20 +52,26 @@ function FamilyDashboard() {
           <div className="min-w-0">
             <p className="text-sm font-medium opacity-80">Right now</p>
             <p className="mt-1 font-display text-2xl font-semibold">
-              {caregiver ? `${caregiver.name} is your caregiver` : "No caregiver selected yet"}
-              {next ? ` · next: ${next.title}` : ""}
+              {caregiver
+                ? `${caregiver.name} is your current care connection`
+                : connectionEnded
+                  ? "Your care connection has ended."
+                  : "No caregiver selected yet"}
+              {caregiver && next ? ` · next: ${next.title}` : ""}
             </p>
             <p className="mt-1 text-sm opacity-90">
-              {next
-                ? `Scheduled for ${next.scheduled_time || next.time_of_day}`
-                : isLoading
-                  ? "Loading today's plan…"
-                  : "Nothing else scheduled for today."}
+              {connectionEnded
+                ? "Past tasks, notes and messages stay saved as historical care records."
+                : next
+                  ? `Scheduled for ${next.scheduled_time || next.time_of_day}`
+                  : isLoading
+                    ? "Loading today's plan…"
+                    : "Nothing else scheduled for today."}
             </p>
           </div>
           <Button asChild variant="secondary" size="lg" className="h-12 rounded-full px-6">
             <Link to={caregiver ? "/shared" : "/family/matches"}>
-              {caregiver ? "Open care circle" : "See matches"}
+              {caregiver ? "Open care circle" : connectionEnded ? "Choose a new caregiver" : "See matches"}
             </Link>
           </Button>
         </div>
@@ -83,7 +91,10 @@ function FamilyDashboard() {
         <StatTile
           label="Caregiver"
           value={caregiver?.name.split(" ")[0] ?? "—"}
-          hint={caregiver?.area || "Choose from your matches"}
+          hint={
+            caregiver?.area ||
+            (connectionEnded ? "Choose a new caregiver" : "Choose from your matches")
+          }
         />
       </div>
 
