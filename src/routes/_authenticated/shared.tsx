@@ -23,6 +23,8 @@ export const Route = createFileRoute("/_authenticated/shared")({
       },
       { property: "og:title", content: "Care circle — Mitra" },
       { property: "og:description", content: "The family and caregiver, on the same page." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SharedDashboard,

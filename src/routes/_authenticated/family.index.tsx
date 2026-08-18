@@ -18,6 +18,8 @@ export const Route = createFileRoute("/_authenticated/family/")({
       },
       { property: "og:title", content: "Family home — Mitra" },
       { property: "og:description", content: "A warm daily picture of how care is going." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FamilyDashboard,

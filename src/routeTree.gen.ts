@@ -28,6 +28,7 @@ import { Route as AuthenticatedFamilyProfileRouteImport } from './routes/_authen
 import { Route as AuthenticatedFamilyRequestRouteImport } from './routes/_authenticated/family.request'
 import { Route as AuthenticatedOnboardingCaregiverRouteImport } from './routes/_authenticated/onboarding.caregiver'
 import { Route as AuthenticatedOnboardingFamilyRouteImport } from './routes/_authenticated/onboarding.family'
+import { Route as AuthenticatedFamilyCaregiversIdRouteImport } from './routes/_authenticated/family.caregivers.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -132,6 +133,12 @@ const AuthenticatedOnboardingFamilyRoute =
     path: '/onboarding/family',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFamilyCaregiversIdRoute =
+  AuthenticatedFamilyCaregiversIdRouteImport.update({
+    id: '/family/caregivers/$id',
+    path: '/family/caregivers/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/onboarding/family': typeof AuthenticatedOnboardingFamilyRoute
   '/caregiver/': typeof AuthenticatedCaregiverIndexRoute
   '/family/': typeof AuthenticatedFamilyIndexRoute
+  '/family/caregivers/$id': typeof AuthenticatedFamilyCaregiversIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -172,6 +180,7 @@ export interface FileRoutesByTo {
   '/onboarding/family': typeof AuthenticatedOnboardingFamilyRoute
   '/caregiver': typeof AuthenticatedCaregiverIndexRoute
   '/family': typeof AuthenticatedFamilyIndexRoute
+  '/family/caregivers/$id': typeof AuthenticatedFamilyCaregiversIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -194,6 +203,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding/family': typeof AuthenticatedOnboardingFamilyRoute
   '/_authenticated/caregiver/': typeof AuthenticatedCaregiverIndexRoute
   '/_authenticated/family/': typeof AuthenticatedFamilyIndexRoute
+  '/_authenticated/family/caregivers/$id': typeof AuthenticatedFamilyCaregiversIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/onboarding/family'
     | '/caregiver/'
     | '/family/'
+    | '/family/caregivers/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/onboarding/family'
     | '/caregiver'
     | '/family'
+    | '/family/caregivers/$id'
   id:
     | '__root__'
     | '/'
@@ -257,6 +269,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding/family'
     | '/_authenticated/caregiver/'
     | '/_authenticated/family/'
+    | '/_authenticated/family/caregivers/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -402,6 +415,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingFamilyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/family/caregivers/$id': {
+      id: '/_authenticated/family/caregivers/$id'
+      path: '/family/caregivers/$id'
+      fullPath: '/family/caregivers/$id'
+      preLoaderRoute: typeof AuthenticatedFamilyCaregiversIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -420,6 +440,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingFamilyRoute: typeof AuthenticatedOnboardingFamilyRoute
   AuthenticatedCaregiverIndexRoute: typeof AuthenticatedCaregiverIndexRoute
   AuthenticatedFamilyIndexRoute: typeof AuthenticatedFamilyIndexRoute
+  AuthenticatedFamilyCaregiversIdRoute: typeof AuthenticatedFamilyCaregiversIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -437,6 +458,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingFamilyRoute: AuthenticatedOnboardingFamilyRoute,
   AuthenticatedCaregiverIndexRoute: AuthenticatedCaregiverIndexRoute,
   AuthenticatedFamilyIndexRoute: AuthenticatedFamilyIndexRoute,
+  AuthenticatedFamilyCaregiversIdRoute: AuthenticatedFamilyCaregiversIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

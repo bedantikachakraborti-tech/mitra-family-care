@@ -32,6 +32,22 @@ export const caregiversQuery = queryOptions({
     unwrap(await supabase.from("caregivers").select("*").order("name")) ?? [],
 });
 
+export function caregiverByIdQuery(id: string | undefined) {
+  return queryOptions({
+    queryKey: ["caregiver", id ?? "none"],
+    enabled: Boolean(id),
+    queryFn: async (): Promise<Caregiver | null> => {
+      const { data, error } = await supabase
+        .from("caregivers")
+        .select("*")
+        .eq("id", id!)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return (data as Caregiver | null) ?? null;
+    },
+  });
+}
+
 export const activeRequestQuery = queryOptions({
   queryKey: ["care-request", "active"],
   queryFn: async (): Promise<CareRequest | null> => {

@@ -22,6 +22,8 @@ export const Route = createFileRoute("/_authenticated/family/matches")({
       },
       { property: "og:title", content: "Suggested caregivers — Mitra" },
       { property: "og:description", content: "Suggestions to consider — the choice stays yours." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MatchesPage,
@@ -172,7 +174,9 @@ function MatchesPage() {
 
             <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button asChild variant="ghost" size="lg" className="h-12 rounded-full">
-                <Link to="/caregiver/profile">View profile</Link>
+                <Link to="/family/caregivers/$id" params={{ id: caregiver.id }}>
+                  View profile
+                </Link>
               </Button>
               <Button
                 size="lg"

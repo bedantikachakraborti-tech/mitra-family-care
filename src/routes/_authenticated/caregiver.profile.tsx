@@ -36,6 +36,8 @@ export const Route = createFileRoute("/_authenticated/caregiver/profile")({
       },
       { property: "og:title", content: "My caregiver profile — Mitra" },
       { property: "og:description", content: "How families get to know you on Mitra." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CaregiverProfilePage,

@@ -16,6 +16,8 @@ export const Route = createFileRoute("/_authenticated/onboarding/family")({
         property: "og:description",
         content: "A few gentle questions about the person you care for.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FamilyOnboarding,

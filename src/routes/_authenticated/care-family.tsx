@@ -45,6 +45,8 @@ export const Route = createFileRoute("/_authenticated/care-family")({
         property: "og:description",
         content: "The daily rhythm everyone in the care circle follows.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CareFamilyPage,

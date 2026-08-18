@@ -30,6 +30,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "One calm, shared home for everyday caregiving.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,

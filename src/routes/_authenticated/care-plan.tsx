@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/care-plan")({
         property: "og:description",
         content: "One entry point to the shared care plan for families and caregivers.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CarePlanRedirect,
