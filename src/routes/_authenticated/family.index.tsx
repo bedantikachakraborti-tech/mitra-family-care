@@ -52,20 +52,26 @@ function FamilyDashboard() {
           <div className="min-w-0">
             <p className="text-sm font-medium opacity-80">Right now</p>
             <p className="mt-1 font-display text-2xl font-semibold">
-              {caregiver ? `${caregiver.name} is your caregiver` : "No caregiver selected yet"}
-              {next ? ` · next: ${next.title}` : ""}
+              {caregiver
+                ? `${caregiver.name} is your current care connection`
+                : connectionEnded
+                  ? "Your care connection has ended."
+                  : "No caregiver selected yet"}
+              {caregiver && next ? ` · next: ${next.title}` : ""}
             </p>
             <p className="mt-1 text-sm opacity-90">
-              {next
-                ? `Scheduled for ${next.scheduled_time || next.time_of_day}`
-                : isLoading
-                  ? "Loading today's plan…"
-                  : "Nothing else scheduled for today."}
+              {connectionEnded
+                ? "Past tasks, notes and messages stay saved as historical care records."
+                : next
+                  ? `Scheduled for ${next.scheduled_time || next.time_of_day}`
+                  : isLoading
+                    ? "Loading today's plan…"
+                    : "Nothing else scheduled for today."}
             </p>
           </div>
           <Button asChild variant="secondary" size="lg" className="h-12 rounded-full px-6">
             <Link to={caregiver ? "/shared" : "/family/matches"}>
-              {caregiver ? "Open care circle" : "See matches"}
+              {caregiver ? "Open care circle" : connectionEnded ? "Choose a new caregiver" : "See matches"}
             </Link>
           </Button>
         </div>
