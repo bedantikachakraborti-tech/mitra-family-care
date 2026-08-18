@@ -25,7 +25,9 @@ export const Route = createFileRoute("/_authenticated/family/")({
 
 function FamilyDashboard() {
   const profile = useMyProfile();
-  const { request, caregiver, tasks, logs, isLoading } = useCareContext();
+  const { request, caregiver, matchActive, tasks, logs, isLoading } = useCareContext();
+  // A former caregiver is history, never the current connection.
+  const connectionEnded = Boolean(request?.selected_caregiver_id) && !matchActive;
   const today = tasksForDay(tasks);
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
