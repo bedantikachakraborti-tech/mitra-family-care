@@ -35,6 +35,27 @@ function CaregiverDashboard() {
 
   const save = useTaskSave({ request, logs, date });
 
+  if (!isLoading && !matchActive) {
+    const ended = Boolean(request?.selected_caregiver_id);
+    return (
+      <AppShell role="caregiver" title="Today's care">
+        <SoftCard>
+          <h2 className="text-lg font-semibold">
+            {ended ? "Your care connection has ended." : "No active care connection yet"}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {ended
+              ? "There are no active tasks to complete. Past tasks, notes and messages stay saved as historical care records."
+              : "Once a family matches with you, today's tasks will appear here."}
+          </p>
+          <Button asChild size="lg" variant="outline" className="mt-5 h-12 rounded-full">
+            <Link to="/caregiver/profile">Update my profile</Link>
+          </Button>
+        </SoftCard>
+      </AppShell>
+    );
+  }
+
   if (!isLoading && today.length === 0) {
     return (
       <AppShell
