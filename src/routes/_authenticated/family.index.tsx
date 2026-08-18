@@ -91,7 +91,10 @@ function FamilyDashboard() {
         <StatTile
           label="Caregiver"
           value={caregiver?.name.split(" ")[0] ?? "—"}
-          hint={caregiver?.area || "Choose from your matches"}
+          hint={
+            caregiver?.area ||
+            (connectionEnded ? "Choose a new caregiver" : "Choose from your matches")
+          }
         />
       </div>
 
