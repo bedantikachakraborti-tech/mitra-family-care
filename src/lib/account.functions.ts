@@ -87,6 +87,17 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     fail("Reading caregiver profile", caregiverError);
 
     for (const caregiver of caregivers ?? []) {
+      // End any active connection and tell the family before unlinking.
+      const { data: activeRequests, error: activeError } = await supabaseAdmin
+        .from("care_requests")
+        .select("id, family_user_id")
+        .eq("selected_caregiver_id", caregiver.id)
+        .eq("match_status", "active");
+      fail("Reading active care connections", activeError);
+      for (const request of activeRequests ?? []) {
+        await endMatch(request, request.family_user_id, "family");
+      }
+
       const { error } = await supabaseAdmin
         .from("caregivers")
         .update({
