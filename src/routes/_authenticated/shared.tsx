@@ -6,6 +6,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Pill, SoftCard, SectionTitle, StatTile } from "@/components/ui-kit";
 import { ReviewPanel } from "@/components/review-panel";
+import { UnmatchCard } from "@/components/unmatch-card";
 import { useRole } from "@/lib/auth";
 import { summaryQuery } from "@/lib/care-data";
 import { DAY_LABELS, statusLabel, type DayKey } from "@/lib/care-types";
@@ -70,7 +71,7 @@ function SharedDashboard() {
 
   return (
     <AppShell
-      role="family"
+      role={role}
       title="Care circle"
       subtitle={`${request.person_name || "Your family member"} · shared with ${caregiver.name}`}
     >
@@ -191,6 +192,13 @@ function SharedDashboard() {
         )}
       </SoftCard>
       <ReviewPanel requestId={request.id} />
+      <UnmatchCard
+        requestId={request.id}
+        otherName={
+          role === "family" ? caregiver.name : request.person_name || "this family"
+        }
+        role={role === "caregiver" ? "caregiver" : "family"}
+      />
     </AppShell>
   );
 }
