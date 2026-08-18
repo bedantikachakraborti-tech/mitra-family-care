@@ -24,9 +24,10 @@ export const Route = createFileRoute("/_authenticated/caregiver/")({
 });
 
 function CaregiverDashboard() {
-  const { request, caregiver, tasks, logs, date, isLoading } = useCareContext();
+  const { request, caregiver, matchActive, tasks, logs, date, isLoading } = useCareContext();
 
-  const today = tasksForDay(tasks);
+  // No active care connection means no active tasks flow through it. History stays.
+  const today = matchActive ? tasksForDay(tasks) : [];
   const done = today.filter((t) => logFor(logs, t.id)?.status === "done").length;
   const next = today.find((t) => (logFor(logs, t.id)?.status ?? "pending") === "pending");
 
