@@ -172,7 +172,9 @@ function MatchesPage() {
 
             <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button asChild variant="ghost" size="lg" className="h-12 rounded-full">
-                <Link to="/caregiver/profile">View profile</Link>
+                <Link to="/family/caregivers/$id" params={{ id: caregiver.id }}>
+                  View profile
+                </Link>
               </Button>
               <Button
                 size="lg"
