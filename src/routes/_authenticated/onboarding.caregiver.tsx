@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/onboarding/caregiver")({
         property: "og:description",
         content: "Tell families who you are and how you like to work.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CaregiverOnboarding,

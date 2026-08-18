@@ -26,6 +26,8 @@ export const Route = createFileRoute("/_authenticated/family/profile")({
       },
       { property: "og:title", content: "My family profile — Mitra" },
       { property: "og:description", content: "Your details, kept simple and in your control." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: FamilyProfilePage,

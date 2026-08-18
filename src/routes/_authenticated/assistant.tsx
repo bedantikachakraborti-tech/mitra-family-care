@@ -26,6 +26,8 @@ export const Route = createFileRoute("/_authenticated/assistant")({
       },
       { property: "og:title", content: "Assistant — Mitra" },
       { property: "og:description", content: "Help with the writing, not another form to fill." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Assistant,

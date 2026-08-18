@@ -30,6 +30,8 @@ export const Route = createFileRoute("/_authenticated/family/request")({
         property: "og:description",
         content: "Write it in your own words; Mitra organises the details for you.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CareRequestPage,

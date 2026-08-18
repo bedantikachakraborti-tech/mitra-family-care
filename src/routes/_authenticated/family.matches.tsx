@@ -22,6 +22,8 @@ export const Route = createFileRoute("/_authenticated/family/matches")({
       },
       { property: "og:title", content: "Suggested caregivers — Mitra" },
       { property: "og:description", content: "Suggestions to consider — the choice stays yours." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MatchesPage,

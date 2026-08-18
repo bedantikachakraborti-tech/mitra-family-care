@@ -29,6 +29,8 @@ export const Route = createFileRoute("/_authenticated/chat")({
       },
       { property: "og:title", content: "Messages — Mitra" },
       { property: "og:description", content: "Private messages inside your care circle." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ChatPage,

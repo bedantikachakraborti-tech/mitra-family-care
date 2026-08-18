@@ -18,6 +18,8 @@ export const Route = createFileRoute("/_authenticated/caregiver/")({
       },
       { property: "og:title", content: "Today's Care — Mitra" },
       { property: "og:description", content: "A caregiver's calm view of the day ahead." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CaregiverDashboard,

@@ -24,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/care-caregiver")({
         property: "og:description",
         content: "Today's care tasks, timings and notes in one calm checklist.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CareCaregiverPage,
