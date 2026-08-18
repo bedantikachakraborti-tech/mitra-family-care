@@ -124,9 +124,22 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // 2. Family-owned data — delete children before parents.
     const { data: requests, error: requestError } = await supabaseAdmin
       .from("care_requests")
-      .select("id")
+      .select("id, match_status, selected_caregiver_id")
       .eq("family_user_id", userId);
     fail("Reading care requests", requestError);
+
+    // End active connections and notify the matched caregiver first.
+    for (const request of requests ?? []) {
+      if (request.match_status !== "active" || !request.selected_caregiver_id) continue;
+      const { data: matched, error: matchedError } = await supabaseAdmin
+        .from("caregivers")
+        .select("user_id")
+        .eq("id", request.selected_caregiver_id)
+        .maybeSingle();
+      fail("Reading the matched caregiver", matchedError);
+      await endMatch(request, matched?.user_id, "caregiver");
+    }
+
 
     const requestIds = (requests ?? []).map((r) => r.id);
     if (requestIds.length > 0) {
